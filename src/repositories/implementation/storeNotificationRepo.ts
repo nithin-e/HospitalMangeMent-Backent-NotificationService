@@ -11,20 +11,20 @@ export default class StoreNotificationRepository implements IstoreNotificationRe
       throw new Error('STRIPE_SECRET_KEY is not defined in environment variables');
     }
     
-    // Create a custom HTTPS agent with increased timeout
+ 
     const httpsAgent = new https.Agent({
-      timeout: 60000, // 60 seconds timeout instead of default
+      timeout: 60000,
       keepAlive: true,
       keepAliveMsecs: 1000,
-      maxSockets: 5, // Limit concurrent connections
+      maxSockets: 5, 
     });
     
-    // Initialize Stripe with the custom agent and proper configuration
+   
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: '2025-03-31.basil',
       httpAgent: httpsAgent,
-      timeout: 60000, // 60 second timeout for API requests
-      maxNetworkRetries: 3, // Automatically retry failed requests
+      timeout: 60000,
+      maxNetworkRetries: 3, 
     });
   }
 
@@ -196,6 +196,44 @@ export default class StoreNotificationRepository implements IstoreNotificationRe
       return result.modifiedCount > 0;
     } catch (error) {
       console.error('Error updating payment status:', error);
+      throw error;
+    }
+  }
+
+
+
+  reschedule_Appointment__Notification = async (data: { email: string, time: string }) => {
+    try {
+      console.log('Creating reschedule notification for:', data);
+      
+      const notificationMessage = `Your appointment has been rescheduled to ${data.time}. Sorry for the inconvenience.`;
+      
+      
+      const newNotification = new NotificationModel({
+        email: data.email,
+        message: notificationMessage,
+        type: 'INFO', // Using INFO type for reschedule notifications
+        isRead: false,
+        createdAt: new Date(),
+        paymentStatus: 'PENDING' // Default value as per schema
+      });
+  
+      // Save to database
+      const savedNotification = await newNotification.save();
+      console.log('Notification saved successfully:', savedNotification);
+  
+      return {
+        success: true,
+        notification: savedNotification,
+        message: 'Reschedule notification created successfully'
+      };
+  
+    } catch (error) {
+      console.error("Error in storing notification data:", error);
+      if (error instanceof Error) {
+        console.error(`Error name: ${error.name}, message: ${error.message}`);
+        if ('code' in error) console.error(`Error code: ${(error as any).code}`);
+      }
       throw error;
     }
   }

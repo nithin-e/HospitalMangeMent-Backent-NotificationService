@@ -20,18 +20,21 @@ connectDB().then(() => {
 import fetchNotificationsControllerr from "../src/controllerr/implementation/fecthNotificationController";
 import storeNotificationController from '../src/controllerr/implementation/storeNotificationController'
 import handleCanceldoctorApplicationControllerr from "../src/controllerr/implementation/handleCanceldoctorApplicationCon";
+import stripModalController from "../src/controllerr/implementation/stripModalController";
 
 
 //import services
 import fecthNotificationService from '../src/Servicess/implementation/fecthNotificationService';
 import storeNotificationservice from '../src/Servicess/implementation/storeNotificationservice';
 import handleCanceldoctorApplicationInService from "../src/Servicess/implementation/handleCanceldoctorApplicationInService";
+import stripeModalService from "../src/Servicess/implementation/stripeModalService";
 
 
 //import repo
 import fecthNotificationRepo from "../src/repositories/implementation/fecthNotificationRepo";
 import storeNotificationRepo from "../src/repositories/implementation/storeNotificationRepo";
 import handleCanceldoctorApplicationRepo from "../src/repositories/implementation/handleCanceldoctorApplicationRepo";
+import stripModalRepo from "../src/repositories/implementation/stripModalRepo";
 
 
 
@@ -53,7 +56,9 @@ const StoreNotificationservice= new storeNotificationservice(StoreNotificationRe
 const StoreNotificationController=new storeNotificationController(StoreNotificationservice)
 
 
-
+const StripModalRepo=new stripModalRepo()
+const StripeModalService=new stripeModalService(StripModalRepo) 
+const StripModalController=new stripModalController(StripeModalService)
 
 
 
@@ -174,8 +179,11 @@ grpcServer.addService(NotificationProto.NotificationService.service, {
   CreateNotification: StoreNotificationController.storeNotificationData,
   HandleStripeWebhook: StoreNotificationController.handleStripeWebhook,
   handleCanceldoctorApplication: HandleCanceldoctorApplicationControllerr.handleCanceldoctor_Application,
-  fecthAllNotifications: FetchNotificationsControllerr.fetchingNotification.bind(FetchNotificationsControllerr)
+  fecthAllNotifications: FetchNotificationsControllerr.fetchingNotification.bind(FetchNotificationsControllerr),
+  rescheduleAppointmentNotification:StoreNotificationController.rescheduleAppointmentNotification,
+   CreateCheckoutSession: StripModalController.HandlingCreateCheckoutSession
 });
+
 console.log('Services added to gRPC server');
 
 // Start gRPC server

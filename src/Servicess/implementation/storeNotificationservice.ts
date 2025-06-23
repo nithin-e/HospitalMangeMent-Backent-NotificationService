@@ -25,7 +25,7 @@ export default class StoreNotificationService implements IstoreNotificationServi
   }
 
   StoreNotification_Data = async (data: {
-    email: string;
+    email: string; 
   }) => {
     try {
       const response = await this.StoreNotificationRepo.storingNotification_Datas(data);
@@ -80,6 +80,18 @@ export default class StoreNotificationService implements IstoreNotificationServi
         success: false, 
         message: `Error processing webhook: ` 
       };
+    }
+  }
+
+  rescheduleAppointment__Notification = async (data: { email: string, time: string }) => {
+    try {
+      const response = await this.StoreNotificationRepo.reschedule_Appointment__Notification(data);
+      console.log('usecase response:', response);
+      
+      return response;
+    } catch (error) {
+      console.error("Error in notification use case:", error);
+      throw error;
     }
   }
 }

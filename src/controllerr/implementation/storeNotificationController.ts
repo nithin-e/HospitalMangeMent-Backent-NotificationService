@@ -118,4 +118,37 @@ export default class StoreNotificationController implements IstoreNotificationCo
       });
     }
   }
+
+  rescheduleAppointmentNotification = async (call: any, callback: any) => {
+    try {
+      const { email, time } = call.request;
+      
+     
+      if (!email || !time) {
+        const error = {
+          code: grpc.status.INVALID_ARGUMENT,
+          message: 'Email and time are required'
+        };
+        return callback(error, null);
+      }
+      
+      const dbResponse = await this.storeNotificationservice.rescheduleAppointment__Notification({
+        email,
+        time
+      });
+  
+      // Return success response
+      callback(null, {
+        success: true
+      });
+  
+    } catch (error) {
+      console.log('Error in notification controller:', error);
+      const grpcError = {
+        code: grpc.status.INTERNAL,
+        message: (error as Error).message,
+      };
+      callback(grpcError, null);
+    }
+  }
 }
