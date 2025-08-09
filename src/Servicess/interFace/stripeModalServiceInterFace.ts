@@ -1,3 +1,5 @@
+import { AppointmentData, StripeSessionResponse } from "../../repositories/interFace/stripeModalInterFace";
+
 export interface IHandlingStripPaymentService {
- Handling_CreateCheckout_Session(call: any, callback: any): Promise<any>;
+    Handling_CreateCheckout_Session(appointmentData: { appointmentData: AppointmentData }): Promise<StripeSessionResponse>;
 }

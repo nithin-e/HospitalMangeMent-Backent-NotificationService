@@ -1,3 +1,5 @@
-export interface IhandleCanceldoctorApplicationService{
-    handleCancel_doctor_Application(call:any,callback:any):Promise<any>;
+import { ServiceCancelDoctorApplicationInput, ServiceCancelDoctorApplicationOutput } from "../implementation/handleCanceldoctorApplicationInService";
+
+export interface IhandleCanceldoctorApplicationService {
+  handleCancelDoctorApplication(data: ServiceCancelDoctorApplicationInput): Promise<ServiceCancelDoctorApplicationOutput>;
 }

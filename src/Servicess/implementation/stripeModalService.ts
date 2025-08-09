@@ -1,31 +1,25 @@
-import stripModalRepo from "../../repositories/implementation/stripModalRepo";
 import { IHandlingStripPaymentService } from "../interFace/stripeModalServiceInterFace";
-import * as grpc from '@grpc/grpc-js';
-
-
+import { AppointmentData, IHandlingStripPaymentRepository, StripeSessionResponse } from "../../repositories/interFace/stripeModalInterFace";
 
 export default class HandlingStripPaymentServices implements IHandlingStripPaymentService {
-    private StripModalRepo:stripModalRepo
-    constructor(StripModalRepo:stripModalRepo) {
-        this.StripModalRepo=StripModalRepo
+    private StripModalRepo: IHandlingStripPaymentRepository;
+
+    constructor(StripModalRepo: IHandlingStripPaymentRepository) {
+        this.StripModalRepo = StripModalRepo;
     }
 
-    Handling_CreateCheckout_Session = async (appointmentData: any) => {
+    async Handling_CreateCheckout_Session(appointmentData: { appointmentData: AppointmentData }): Promise<StripeSessionResponse> {
         try {
-            // Pass appointment data to repository
-            const response = await this.StripModalRepo.HandlingCreateCheckout_Session(appointmentData);
-            return response;
-            
+            console.log('ith ibde ethe avastahhhh')
+            return await this.StripModalRepo.HandlingCreateCheckout_Session(appointmentData);
         } catch (error) {
-            console.log('Error in notification service:', error);
-            
+            console.log('Error in stripe payment service:', error);
             return {
                 success: false,
-                error: (error as Error).message,
+                error: error instanceof Error ? error.message : 'Unknown error',
                 sessionId: null,
                 url: null
             };
         }
     }
-
 }

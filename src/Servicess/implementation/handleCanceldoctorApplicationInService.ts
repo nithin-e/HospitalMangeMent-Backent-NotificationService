@@ -1,27 +1,61 @@
-
+import HandleCanceldoctorApplicationRepository, { 
+  CancelDoctorApplicationInput, 
+  CancelDoctorApplicationOutput 
+} from "../../repositories/implementation/handleCanceldoctorApplicationRepo";
 import { IhandleCanceldoctorApplicationService } from "../interFace/handleCanceldoctorApplicationInInterFace";
-import HandleCanceldoctorApplicationRepository from "../../repositories/implementation/handleCanceldoctorApplicationRepo";
 
+// Types for service layer
+export interface ServiceCancelDoctorApplicationInput {
+  email: string;
+  reasons: string[];
+}
 
+export interface ServiceCancelDoctorApplicationOutput {
+  _id: string;
+  email: string;
+  message: string;
+  type: string;
+  isRead: boolean;
+  createdAt: Date;
+  paymentStatus: string;
+  paymentAmount?: number;
+  paymentLink?: string;
+  updatedAt?: Date;
+}
 
-export default class handleCanceldoctorApplicationService implements IhandleCanceldoctorApplicationService{
-  private HandleCanceldoctorApplicationRepo: HandleCanceldoctorApplicationRepository;
+export default class HandleCanceldoctorApplicationService implements IhandleCanceldoctorApplicationService {
+  private handleCanceldoctorApplicationRepo: HandleCanceldoctorApplicationRepository;
   
-  constructor(HandleCanceldoctorApplicationRepo: HandleCanceldoctorApplicationRepository) {
-    this.HandleCanceldoctorApplicationRepo = HandleCanceldoctorApplicationRepo;
+  constructor(handleCanceldoctorApplicationRepo: HandleCanceldoctorApplicationRepository) {
+    this.handleCanceldoctorApplicationRepo = handleCanceldoctorApplicationRepo;
   }
 
-  handleCancel_doctor_Application = async (data: {
-    email: string;
-    reasons: string[];
-  }) => {
+  handleCancelDoctorApplication = async (
+    data: ServiceCancelDoctorApplicationInput
+  ): Promise<ServiceCancelDoctorApplicationOutput> => {
     try {
-      const response = await this.HandleCanceldoctorApplicationRepo.handleCanceldoctor___Application(data);
-      console.log('usecase responce',response);
+      // Validate input
+      if (!data.email || !Array.isArray(data.reasons)) {
+        throw new Error('Invalid input: email and reasons array are required');
+      }
+
+      const response = await this.handleCanceldoctorApplicationRepo.handleCanceldoctorApplication(data);
+      console.log('Service response:', response);
       
-      return response;
+      return {
+        _id: response._id,
+        email: response.email,
+        message: response.message,
+        type: response.type,
+        isRead: response.isRead,
+        createdAt: response.createdAt,
+        paymentStatus: response.paymentStatus,
+        paymentAmount: response.paymentAmount,
+        paymentLink: response.paymentLink,
+        updatedAt: response.updatedAt
+      };
     } catch (error) {
-      console.error("Error in notification use case:", error);
+      console.error("Error in notification service:", error);
       throw error;
     }
   }

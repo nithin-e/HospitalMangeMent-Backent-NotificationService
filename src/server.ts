@@ -178,12 +178,14 @@ console.log('Adding services to gRPC server...');
 grpcServer.addService(NotificationProto.NotificationService.service, {
   CreateNotification: StoreNotificationController.storeNotificationData,
   HandleStripeWebhook: StoreNotificationController.handleStripeWebhook,
-  handleCanceldoctorApplication: HandleCanceldoctorApplicationControllerr.handleCanceldoctor_Application,
+  handleCanceldoctorApplication: HandleCanceldoctorApplicationControllerr.handleCanceldoctorApplication,
   fecthAllNotifications: FetchNotificationsControllerr.fetchingNotification.bind(FetchNotificationsControllerr),
   rescheduleAppointmentNotification:StoreNotificationController.rescheduleAppointmentNotification,
-   CreateCheckoutSession: StripModalController.HandlingCreateCheckoutSession
+  CreateCheckoutSession: StripModalController.Handling_CreateCheckout_Session,
+   createAdminBlockingNotification:StoreNotificationController.creatingNotificationAdminBlock
 });
 
+// HandleStripeWebhook
 console.log('Services added to gRPC server');
 
 // Start gRPC server

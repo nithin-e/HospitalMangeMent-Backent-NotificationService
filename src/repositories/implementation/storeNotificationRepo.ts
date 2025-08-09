@@ -3,6 +3,41 @@ import { NotificationModel } from '../../entities/notification_Schema';
 import https from 'https';
 import { IstoreNotificationRepository } from '../interFace/storeNotificationRepoInterFace';
 
+// Types for repository methods
+export interface NotificationData {
+  email: string;
+}
+
+export interface RescheduleData {
+  email: string;
+  time: string;
+}
+
+export interface AdminBlockData {
+  email: string;
+  reason: string;
+}
+
+export interface NotificationResponse {
+  notification: any; // Replace with your actual notification type
+}
+
+export interface RescheduleResponse {
+  success: boolean;
+  notification?: any;
+  message?: string;
+}
+
+export interface AdminBlockResponse {
+  success: boolean;
+  error?: string;
+  message?: string;
+}
+
+export interface PaymentStatusUpdateResponse {
+  success: boolean;
+}
+
 export default class StoreNotificationRepository implements IstoreNotificationRepository {
   private stripe: Stripe;
   
@@ -11,7 +46,6 @@ export default class StoreNotificationRepository implements IstoreNotificationRe
       throw new Error('STRIPE_SECRET_KEY is not defined in environment variables');
     }
     
- 
     const httpsAgent = new https.Agent({
       timeout: 60000,
       keepAlive: true,
@@ -19,7 +53,6 @@ export default class StoreNotificationRepository implements IstoreNotificationRe
       maxSockets: 5, 
     });
     
-   
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: '2025-03-31.basil',
       httpAgent: httpsAgent,
@@ -28,29 +61,18 @@ export default class StoreNotificationRepository implements IstoreNotificationRe
     });
   }
 
-  storingNotification_Datas = async (data: {
-    email: string;
-  }) => {
+  storingNotification_Datas = async (data: NotificationData): Promise<NotificationResponse> => {
     try {
-      // Custom values set in backend
       const message = "Your application has been approved! Please complete the payment to join our medical team.";
       const paymentAmount = 10000;
-
-      // Generate a unique transaction ID
       const transactionId = `tx_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
-      console.log(`Creating payment for ${data.email} with amount ${paymentAmount}`);
-      
-      // 1. Create a Stripe payment link
       const paymentLink = await this.createStripePaymentLink(
         data.email,
         paymentAmount,
         transactionId
       );
       
-      console.log(`Successfully created payment link: ${paymentLink.url}`);
-      
-      // 2. Store notification with payment link
       const notification = await NotificationModel.create({
         email: data.email,
         message: message,
@@ -58,7 +80,7 @@ export default class StoreNotificationRepository implements IstoreNotificationRe
         paymentAmount: paymentAmount,
         paymentLink: paymentLink.url,
         paymentStatus: 'PENDING',
-        transactionId: transactionId, // Save the transaction ID for reference
+        transactionId: transactionId, 
         isRead: false,
         createdAt: new Date()
       });
@@ -66,71 +88,47 @@ export default class StoreNotificationRepository implements IstoreNotificationRe
       return { notification };
     } catch (error) {
       console.error("Error in storing notification data:", error);
-      if (error instanceof Error) {
-        console.error(`Error name: ${error.name}, message: ${error.message}`);
-        if ('code' in error) console.error(`Error code: ${(error as any).code}`);
-      }
       throw error;
     }
   };
 
-  private createStripePaymentLink = async (email: string, amount: number, transactionId: string) => {
+  private createStripePaymentLink = async (email: string, amount: number, transactionId: string): Promise<Stripe.PaymentLink> => {
     try {
-      console.log('Payment link creation initiated for email:', email);
-      
       if (!process.env.FRONTEND_URL) {
         throw new Error('FRONTEND_URL is not defined in environment variables');
       }
 
-      // Retry mechanism with exponential backoff
       const createWithRetry = async <T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> => {
         try {
           return await fn();
         } catch (error) {
           if (retries <= 0) throw error;
-          
-          console.log(`Retrying operation after ${delay}ms, ${retries} attempts left`);
           await new Promise(resolve => setTimeout(resolve, delay));
           return createWithRetry(fn, retries - 1, delay * 2);
         }
       };
       
-      // Create a unique product name with transaction ID
       const productName = `Doctor Registration Fee - ${transactionId}`;
       
-      // Create a product for this specific payment with retry
       const product = await createWithRetry(() => 
         this.stripe.products.create({
           name: productName,
           description: 'One-time fee to join our medical team',
-          metadata: {
-            email,
-            transactionId,
-            created: new Date().toISOString()
-          }
+          metadata: { email, transactionId, created: new Date().toISOString() }
         })
       );
 
-      // Create a price for the product with retry
       const price = await createWithRetry(() => 
         this.stripe.prices.create({
-          unit_amount: amount, // Already in cents
+          unit_amount: amount,
           currency: 'usd',
           product: product.id,
-          metadata: {
-            transactionId
-          }
+          metadata: { transactionId }
         })
       );
 
-      // Create payment link with TypeScript cast to include prefilled_email
       const paymentLinkParams: any = {
-        line_items: [
-          {
-            price: price.id,
-            quantity: 1,
-          },
-        ],
+        line_items: [{ price: price.id, quantity: 1 }],
         after_completion: {
           type: 'redirect',
           redirect: {
@@ -144,32 +142,21 @@ export default class StoreNotificationRepository implements IstoreNotificationRe
           transactionId,
           uniqueId: `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`
         },
-        automatic_tax: {
-          enabled: false
-        }
+        automatic_tax: { enabled: false }
       };
       
-      // Alternative approach: Only use prefilled_email in development environments
       if (process.env.NODE_ENV === 'development' && email) {
-        // Consider using a randomly modified email for testing to prevent caching
         const testEmail = email.replace('@', `+${Math.floor(Math.random() * 10000)}@`);
         paymentLinkParams.prefilled_email = testEmail;
       }
       
-      // Create payment link with retry
       const paymentLink = await createWithRetry(() => 
         this.stripe.paymentLinks.create(paymentLinkParams)
       );
       
-      console.log(`Created payment link: ${paymentLink.url} for transaction: ${transactionId}`);
-      
       return paymentLink;
     } catch (error) {
       console.error("Error creating Stripe payment link:", error);
-      if (error instanceof Error) {
-        console.error(`Error details: ${error.name}: ${error.message}`);
-        if ('statusCode' in error) console.error(`Status code: ${(error as any).statusCode}`);
-      }
       throw error;
     }
   };
@@ -190,9 +177,7 @@ export default class StoreNotificationRepository implements IstoreNotificationRe
           } 
         }
       );
-      const resultt = await NotificationModel.deleteMany({ email });
-      console.log('Payment status update result:', result);
-      
+      await NotificationModel.deleteMany({ email });
       return result.modifiedCount > 0;
     } catch (error) {
       console.error('Error updating payment status:', error);
@@ -200,41 +185,55 @@ export default class StoreNotificationRepository implements IstoreNotificationRe
     }
   }
 
-
-
-  reschedule_Appointment__Notification = async (data: { email: string, time: string }) => {
+  reschedule_Appointment__Notification = async (data: RescheduleData): Promise<RescheduleResponse> => {
     try {
-      console.log('Creating reschedule notification for:', data);
-      
       const notificationMessage = `Your appointment has been rescheduled to ${data.time}. Sorry for the inconvenience.`;
-      
       
       const newNotification = new NotificationModel({
         email: data.email,
         message: notificationMessage,
-        type: 'INFO', // Using INFO type for reschedule notifications
+        type: 'INFO',
         isRead: false,
         createdAt: new Date(),
-        paymentStatus: 'PENDING' // Default value as per schema
+        paymentStatus: 'PENDING'
       });
   
-      // Save to database
       const savedNotification = await newNotification.save();
-      console.log('Notification saved successfully:', savedNotification);
   
       return {
         success: true,
         notification: savedNotification,
         message: 'Reschedule notification created successfully'
       };
-  
     } catch (error) {
       console.error("Error in storing notification data:", error);
-      if (error instanceof Error) {
-        console.error(`Error name: ${error.name}, message: ${error.message}`);
-        if ('code' in error) console.error(`Error code: ${(error as any).code}`);
-      }
       throw error;
+    }
+  }
+
+  creatingNotification__AdminBlock = async (data: AdminBlockData): Promise<AdminBlockResponse> => {
+    try {
+      const newNotification = new NotificationModel({
+        email: data.email,
+        message: data.reason,
+        type: 'ALERT', 
+        isRead: false,
+        paymentStatus: 'PENDING',
+        createdAt: new Date(),
+      });
+  
+      await newNotification.save();
+      
+      return {
+        success: true
+      };
+    } catch (error) {
+      console.error("Error in storing notification data:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        message: 'Failed to create notification'
+      };
     }
   }
 }

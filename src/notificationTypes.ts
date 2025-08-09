@@ -1,0 +1,95 @@
+// notification.interfaces.ts
+
+export interface INotificationResponse {
+    success: boolean;
+    notification: INotification[];
+  }
+  
+  export interface INotification {
+    id?: any;
+    email: string;
+    message: string;
+    type: 'PAYMENT' | 'INFO' | 'ALERT';
+    paymentAmount?: number;
+    paymentLink?: string;
+    paymentStatus: 'PENDING' | 'COMPLETED' | 'FAILED';
+    isRead: boolean;
+    createdAt: Date;
+    updatedAt?: Date;
+  }
+  
+  export interface IFormattedNotification {
+     id: any;
+    user_id: string;
+    message: string;
+    type: number;
+    is_read: boolean;
+    created_at: ITimestamp | null;
+    payment_amount: number;
+    payment_link: string;
+    payment_status: number;
+  }
+  
+  export interface ITimestamp {
+    seconds: number;
+    nanos: number;
+  }
+  
+  export interface IGrpcNotificationResponse {
+    notification: IFormattedNotification[];
+    success: boolean;
+  }
+  
+  export enum NotificationType {
+    TYPE_UNSPECIFIED = 0,
+    INFO = 1,
+    APPROVAL = 2,
+    PAYMENT = 3,
+    ALERT = 4
+  }
+  
+  export enum PaymentStatus {
+    STATUS_UNSPECIFIED = 0,
+    PENDING = 1,
+    COMPLETED = 2,
+    FAILED = 3
+  }
+
+  export interface CancelDoctorApplicationData {
+    email: string;
+    reasons: string[];
+  }
+  
+  export interface NotificationResponse {
+    _id: string;
+    email: string;
+    message: string;
+    type: 'PAYMENT' | 'INFO' | 'ALERT';
+    paymentAmount?: number;
+    paymentLink?: string;
+    paymentStatus: 'PENDING' | 'COMPLETED' | 'FAILED';
+    isRead: boolean;
+    createdAt: Date;
+    updatedAt?: Date;
+  }
+
+
+  import * as grpc from '@grpc/grpc-js';
+
+export interface GrpcCall {
+    request: any;
+    metadata: grpc.Metadata;
+    getPeer(): string;
+    sendMetadata(responseMetadata: grpc.Metadata): void;
+    // Add other gRPC call methods you need
+}
+
+export interface GrpcCallback {
+    (error: grpc.ServiceError | null, response: any): void;
+}
+
+// export interface ServiceError extends grpc.ServiceError {
+//     code: grpc.status;
+//     message: string;
+//     details?: string;
+// }

@@ -1,35 +1,78 @@
 import * as grpc from '@grpc/grpc-js';
-// import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
-import { IhandleCanceldoctorApplicationController } from '../interFace/handleCanceldoctorApplicationInterface';
-import handleCanceldoctorApplicationInService from "../../Servicess/implementation/handleCanceldoctorApplicationInService";
+import HandleCanceldoctorApplicationService, { ServiceCancelDoctorApplicationOutput } from '../../Servicess/implementation/handleCanceldoctorApplicationInService';
 
-export default class HandleCanceldoctorApplicationController implements IhandleCanceldoctorApplicationController{
-  private handleCanceldoctorApplicationInService: handleCanceldoctorApplicationInService;
 
-  constructor(handleCanceldoctorApplicationInService: handleCanceldoctorApplicationInService) {
-    this.handleCanceldoctorApplicationInService=handleCanceldoctorApplicationInService
+// Types for controller layer
+export interface GrpcCallRequest {
+  email: string;
+  reasons: string[];
+}
+
+export interface GrpcCall {
+  request: GrpcCallRequest;
+}
+
+export interface GrpcCallback {
+  (error: any, response?: { notification: NotificationProtoResponse }): void;
+}
+
+export interface NotificationProtoResponse {
+  user_id: string;
+  title: string;
+  message: string;
+  type: number;
+  is_read: boolean;
+  created_at: TimestampProto;
+  payment_amount: number;
+  payment_link: string;
+  payment_status: number;
+}
+
+export interface TimestampProto {
+  seconds: number;
+  nanos: number;
+}
+
+export default class HandleCanceldoctorApplicationController {
+  private handleCanceldoctorApplicationService: HandleCanceldoctorApplicationService;
+
+  constructor(handleCanceldoctorApplicationService: HandleCanceldoctorApplicationService) {
+    this.handleCanceldoctorApplicationService = handleCanceldoctorApplicationService;
   }
 
-  handleCanceldoctor_Application = async (call: any, callback: any) => {
+  handleCanceldoctorApplication = async (
+    call: GrpcCall, 
+    callback: GrpcCallback
+  ): Promise<void> => {
     try {
-      console.log('notification controller request:', call.request);
+      console.log('Notification controller request:', call.request);
       
-      // Extract email and reasons from the request
+      // Validate request
+      if (!call.request.email || !Array.isArray(call.request.reasons)) {
+        const grpcError = {
+          code: grpc.status.INVALID_ARGUMENT,
+          message: 'Invalid request: email and reasons array are required',
+        };
+        callback(grpcError, undefined);
+        return;
+      }
+
       const { email, reasons } = call.request;
       
       // Get the database response
-      const dbResponse = await this.handleCanceldoctorApplicationInService.handleCancel_doctor_Application({
-        email, reasons
+      const dbResponse: ServiceCancelDoctorApplicationOutput = await this.handleCanceldoctorApplicationService.handleCancelDoctorApplication({
+        email, 
+        reasons
       });
       
-      console.log('Notification created: in note controller', dbResponse);
+      console.log('Notification created in controller:', dbResponse);
       
       // Map the MongoDB document to the proto Notification message format
-      const notificationProto = {
-        user_id: email,  // Assuming email is used as user_id
-        title: "Application Rejected",  // Add a title
+      const notificationProto: NotificationProtoResponse = {
+        user_id: email,
+        title: "Application Rejected",
         message: dbResponse.message,
-        type: this.mapNotificationType(dbResponse.type),  // Map string type to enum
+        type: this.mapNotificationType(dbResponse.type),
         is_read: dbResponse.isRead,
         created_at: this.dateToTimestamp(dbResponse.createdAt),
         payment_amount: dbResponse.paymentAmount || 0,
@@ -40,12 +83,12 @@ export default class HandleCanceldoctorApplicationController implements IhandleC
       // Return the properly formatted notification
       callback(null, { notification: notificationProto });
     } catch (error) {
-      console.log('Error in notification controller:', error);
+      console.error('Error in notification controller:', error);
       const grpcError = {
         code: grpc.status.INTERNAL,
         message: (error as Error).message,
       };
-      callback(grpcError, null);
+      callback(grpcError, undefined);
     }
   }
 
@@ -80,11 +123,11 @@ export default class HandleCanceldoctorApplicationController implements IhandleC
   }
 
   // Helper method to convert JavaScript Date to Protobuf Timestamp
-  private dateToTimestamp(date: Date): any {
+  private dateToTimestamp(date: Date): TimestampProto {
     const timestamp = new Date(date).getTime();
     const seconds = Math.floor(timestamp / 1000);
     const nanos = (timestamp % 1000) * 1000000;
     
-    return { seconds: seconds, nanos: nanos };
+    return { seconds, nanos };
   }
 }

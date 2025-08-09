@@ -1,4 +1,6 @@
+import { INotificationResponse } from "../../notificationTypes";
+
 export interface IfecthNotificationRepository{
-    FetchNotification__Repo(call:any,callback:any):Promise<any>;
+    FetchNotification__Repo(email:string):Promise<INotificationResponse>;
     
 }
