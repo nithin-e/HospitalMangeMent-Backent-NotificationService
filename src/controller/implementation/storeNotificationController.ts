@@ -1,5 +1,5 @@
 import * as grpc from '@grpc/grpc-js';
-import { IstoreNotificationService } from '../../Servicess/interFace/storeNotificationServiceInterFace';
+import { IStoreNotificationService } from '../../Services/interFace/storeNotificationServiceInterFace';
 
 
 interface ProtoNotification {
@@ -48,14 +48,14 @@ function dateToTimestamp(date: Date): { seconds: number; nanos: number } {
   return { seconds, nanos };
 }
 
-export default class StoreNotificationController  {
-  private storeNotificationservice: IstoreNotificationService;
+export default class StoreNotificationController   {
+  private storeNotificationservice: IStoreNotificationService;
 
-  constructor(storeNotificationservice: IstoreNotificationService) {
+  constructor(storeNotificationservice: IStoreNotificationService) {
     this.storeNotificationservice = storeNotificationservice;
   }
 
-  storeNotificationData = async (call: GrpcCall, callback: GrpcCallback): Promise<void> => {
+  storeNotificationData  = async (call: GrpcCall, callback: GrpcCallback): Promise<void> => {
     try {
       const { email } = call.request;
       
@@ -63,7 +63,7 @@ export default class StoreNotificationController  {
         throw new Error('Email is required');
       }
       
-      const dbResponse = await this.storeNotificationservice.StoreNotification_Data({ email });
+      const dbResponse = await this.storeNotificationservice.storeNotificationData({ email });
       
       const { notification } = dbResponse;
       
@@ -94,7 +94,7 @@ export default class StoreNotificationController  {
   }
   
 
-  handleStripeWebhook = async (call: GrpcCall, callback: GrpcCallback): Promise<void> => {
+  handleStripeWebhook  = async (call: GrpcCall, callback: GrpcCallback): Promise<void> => {
     try {
       if (!call.request.event_data) {
         callback(null, { 
@@ -118,7 +118,7 @@ export default class StoreNotificationController  {
     }
   }
 
-  rescheduleAppointmentNotification = async (call: GrpcCall, callback: GrpcCallback): Promise<void> => {
+  rescheduleAppointmentNotification  = async (call: GrpcCall, callback: GrpcCallback): Promise<void> => {
     try {
       const { email, time } = call.request;
       
@@ -130,7 +130,7 @@ export default class StoreNotificationController  {
         return callback(error, null);
       }
       
-      await this.storeNotificationservice.rescheduleAppointment__Notification({ email, time });
+      await this.storeNotificationservice.rescheduleAppointmentNotification({ email, time });
   
       callback(null, { success: true });
     } catch (error) {
@@ -142,11 +142,11 @@ export default class StoreNotificationController  {
     }
   }
 
-  creatingNotificationAdminBlock = async (call: GrpcCall, callback: GrpcCallback): Promise<void> => {
+  createAdminBlockNotification  = async (call: GrpcCall, callback: GrpcCallback): Promise<void> => {
     try {
       const { email, reason } = call.request;
       
-      const dbResponse = await this.storeNotificationservice.creatingNotification_AdminBlock({
+      const dbResponse = await this.storeNotificationservice.createAdminBlockNotification({
         email,
         reason
       });

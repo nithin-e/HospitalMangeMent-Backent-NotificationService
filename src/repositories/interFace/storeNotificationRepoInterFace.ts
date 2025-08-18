@@ -34,9 +34,13 @@ interface NotificationRequest {
     success: boolean;
   }
   
-  export interface IstoreNotificationRepository {
-    storingNotification_Datas(data: NotificationRequest): Promise<NotificationRepositoryResponse>;
-    updatePaymentStatus(email: string, status: string, transactionId?: string): Promise<boolean>;
-    reschedule_Appointment__Notification(data: RescheduleRequest): Promise<RescheduleRepositoryResponse>;
-    creatingNotification__AdminBlock(data: AdminBlockRequest): Promise<AdminBlockRepositoryResponse>;
-  }
+
+
+
+
+  export interface IStoreNotificationRepository {
+  storeNotificationData(data: NotificationRequest): Promise<NotificationRepositoryResponse>;
+  updatePaymentStatus(email: string, status: string, transactionId?: string): Promise<boolean>;
+  rescheduleAppointmentNotification(data: RescheduleRequest): Promise<RescheduleRepositoryResponse>;
+  createAdminBlockNotification(data: AdminBlockRequest): Promise<AdminBlockRepositoryResponse>;
+}

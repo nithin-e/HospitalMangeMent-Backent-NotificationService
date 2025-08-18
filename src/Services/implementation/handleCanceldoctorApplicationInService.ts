@@ -2,7 +2,8 @@ import HandleCanceldoctorApplicationRepository, {
   CancelDoctorApplicationInput, 
   CancelDoctorApplicationOutput 
 } from "../../repositories/implementation/handleCanceldoctorApplicationRepo";
-import { IhandleCanceldoctorApplicationService } from "../interFace/handleCanceldoctorApplicationInInterFace";
+import { ICancelDoctorApplicationRepository } from "../../repositories/interFace/handleCanceldoctorApplicationRepoInterFace";
+import { ICancelDoctorApplicationService } from "../interFace/handleCanceldoctorApplicationInInterFace";
 
 // Types for service layer
 export interface ServiceCancelDoctorApplicationInput {
@@ -23,10 +24,10 @@ export interface ServiceCancelDoctorApplicationOutput {
   updatedAt?: Date;
 }
 
-export default class HandleCanceldoctorApplicationService implements IhandleCanceldoctorApplicationService {
-  private handleCanceldoctorApplicationRepo: HandleCanceldoctorApplicationRepository;
+export default class HandleCanceldoctorApplicationService implements ICancelDoctorApplicationService {
+  private handleCanceldoctorApplicationRepo: ICancelDoctorApplicationRepository;
   
-  constructor(handleCanceldoctorApplicationRepo: HandleCanceldoctorApplicationRepository) {
+  constructor(handleCanceldoctorApplicationRepo: ICancelDoctorApplicationRepository) {
     this.handleCanceldoctorApplicationRepo = handleCanceldoctorApplicationRepo;
   }
 
@@ -39,7 +40,7 @@ export default class HandleCanceldoctorApplicationService implements IhandleCanc
         throw new Error('Invalid input: email and reasons array are required');
       }
 
-      const response = await this.handleCanceldoctorApplicationRepo.handleCanceldoctorApplication(data);
+      const response = await this.handleCanceldoctorApplicationRepo.handleCancelDoctorApplication(data);
       console.log('Service response:', response);
       
       return {

@@ -1,14 +1,14 @@
 import {NotificationModel} from "../../entities/notification_Schema";
 import { INotification, INotificationResponse } from "../../notificationTypes";
-import { IfecthNotificationRepository } from "../interFace/fecthNotificationRepoInterFace";
+import {  IFetchNotificationRepository } from "../interFace/fecthNotificationRepoInterFace";
 
 
- export default class FetchNotificationRepo implements IfecthNotificationRepository {
+ export default class FetchNotificationRepo implements IFetchNotificationRepository {
        
         
-  async FetchNotification__Repo(email: string): Promise<INotificationResponse> {
+  async fetchNotifications(email: string): Promise<INotificationResponse> {
     try {
-      const notifications = await NotificationModel.findOne({ email });
+      const notifications = await NotificationModel.findOne({ email })
 
       if (!notifications) {
         return { 
@@ -17,7 +17,7 @@ import { IfecthNotificationRepository } from "../interFace/fecthNotificationRepo
         };
       }
 
-      // Convert MongoDB document to interface format
+  
       const notificationData: INotification = {
          id: notifications._id,
         email: notifications.email,

@@ -1,19 +1,19 @@
 import * as grpc from '@grpc/grpc-js';
 import { ServerUnaryCall, sendUnaryData, ServiceError } from '@grpc/grpc-js';
-import { IfecthNotificationService } from '../../Servicess/interFace/fecthNotificationServiceInterFace';
+import {  IFetchNotificationService } from '../../Services/interFace/fecthNotificationServiceInterFace';
 import { IFormattedNotification, IGrpcNotificationResponse, INotificationResponse } from '../../notificationTypes';
 
-export default class FetchingNotifications  {
-  private FecthNotificationService: IfecthNotificationService;
+export default class NotificationController   {
+  private FecthNotificationService: IFetchNotificationService;
 
-  constructor(FecthNotificationService: IfecthNotificationService) {
+  constructor(FecthNotificationService: IFetchNotificationService) {
     this.FecthNotificationService = FecthNotificationService;
   }
   
 
 
 
-  async fetchingNotification(
+  async fetchNotifications(
     call: ServerUnaryCall<Record<string, never>,IGrpcNotificationResponse>, 
     callback: sendUnaryData<IGrpcNotificationResponse>
   ): Promise<IGrpcNotificationResponse> {
@@ -29,7 +29,7 @@ export default class FetchingNotifications  {
         throw new Error('FecthNotificationService is not initialized');
       }
 
-      const response: INotificationResponse = await this.FecthNotificationService.fetching_Notifications(email);
+      const response: INotificationResponse = await this.FecthNotificationService.fetchNotifications(email);
       console.log('controller res', response);
 
       

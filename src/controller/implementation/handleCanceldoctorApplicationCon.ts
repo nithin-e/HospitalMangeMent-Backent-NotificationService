@@ -1,5 +1,6 @@
 import * as grpc from '@grpc/grpc-js';
-import HandleCanceldoctorApplicationService, { ServiceCancelDoctorApplicationOutput } from '../../Servicess/implementation/handleCanceldoctorApplicationInService';
+import HandleCanceldoctorApplicationService, { ServiceCancelDoctorApplicationOutput } from '../../Services/implementation/handleCanceldoctorApplicationInService';
+import { ICancelDoctorApplicationService } from '../../Services/interFace/handleCanceldoctorApplicationInInterFace';
 
 
 // Types for controller layer
@@ -33,14 +34,14 @@ export interface TimestampProto {
   nanos: number;
 }
 
-export default class HandleCanceldoctorApplicationController {
-  private handleCanceldoctorApplicationService: HandleCanceldoctorApplicationService;
+export default class HandleCancelDoctorApplicationController  {
+  private handleCanceldoctorApplicationService: ICancelDoctorApplicationService;
 
-  constructor(handleCanceldoctorApplicationService: HandleCanceldoctorApplicationService) {
+  constructor(handleCanceldoctorApplicationService: ICancelDoctorApplicationService) {
     this.handleCanceldoctorApplicationService = handleCanceldoctorApplicationService;
   }
 
-  handleCanceldoctorApplication = async (
+  handleCancelDoctorApplication  = async (
     call: GrpcCall, 
     callback: GrpcCallback
   ): Promise<void> => {

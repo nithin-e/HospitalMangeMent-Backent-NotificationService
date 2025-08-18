@@ -1,4 +1,4 @@
-import { IstoreNotificationService } from "../interFace/storeNotificationServiceInterFace";
+import { IStoreNotificationService } from "../interFace/storeNotificationServiceInterFace";
 import StoreNotificationRepository, { 
   NotificationData, 
   RescheduleData, 
@@ -7,7 +7,7 @@ import StoreNotificationRepository, {
   RescheduleResponse, 
   AdminBlockResponse 
 } from "../../repositories/implementation/storeNotificationRepo";
-import { IstoreNotificationRepository } from "../../repositories/interFace/storeNotificationRepoInterFace";
+import { IStoreNotificationRepository } from "../../repositories/interFace/storeNotificationRepoInterFace";
 import { UserService } from "../../protoConfig/user.client";
 
 export interface WebhookEventData {
@@ -25,15 +25,7 @@ export interface WebhookEventData {
 
 
 
-const StatusCode = {
-    OK: 200,
-    Created: 201,
-    BadRequest: 400,
-    Unauthorized: 401,
-    Forbidden: 403,
-    NotFound: 404,
-    InternalServerError: 500,
-  };
+
 
 
 
@@ -42,19 +34,19 @@ export interface WebhookResponse {
   message: string;
 }
 
-export default class StoreNotificationService implements IstoreNotificationService {
-  private StoreNotificationRepo: IstoreNotificationRepository;
+export default class StoreNotificationService implements IStoreNotificationService {
+  private StoreNotificationRepo: IStoreNotificationRepository;
   
-  constructor(StoreNotificationRepo: IstoreNotificationRepository) {
+  constructor(StoreNotificationRepo: IStoreNotificationRepository) {
     this.StoreNotificationRepo = StoreNotificationRepo;
   }
 
 
 
 
-  StoreNotification_Data = async (data: NotificationData): Promise<NotificationResponse> => {
+  storeNotificationData = async (data: NotificationData): Promise<NotificationResponse> => {
     try {
-        const response = await this.StoreNotificationRepo.storingNotification_Datas(data);
+        const response = await this.StoreNotificationRepo.storeNotificationData(data);
         console.log('check this response after storing notification', response);
 
        
@@ -101,6 +93,7 @@ export default class StoreNotificationService implements IstoreNotificationServi
 
 
 
+// after the payment changing the user role
  async processWebhookEvent(eventType: string, eventData: WebhookEventData): Promise<WebhookResponse> {
   try {
     if (eventType === 'checkout.session.completed') {
@@ -163,18 +156,18 @@ export default class StoreNotificationService implements IstoreNotificationServi
 
 
 
-  rescheduleAppointment__Notification = async (data: RescheduleData): Promise<RescheduleResponse> => {
+  rescheduleAppointmentNotification = async (data: RescheduleData): Promise<RescheduleResponse> => {
     try {
-      return await this.StoreNotificationRepo.reschedule_Appointment__Notification(data);
+      return await this.StoreNotificationRepo.rescheduleAppointmentNotification(data);
     } catch (error) {
       console.error("Error in notification use case:", error);
       throw error;
     }
   }
 
-  creatingNotification_AdminBlock = async (data: AdminBlockData): Promise<AdminBlockResponse> => {
+  createAdminBlockNotification = async (data: AdminBlockData): Promise<AdminBlockResponse> => {
     try {
-      return await this.StoreNotificationRepo.creatingNotification__AdminBlock(data);
+      return await this.StoreNotificationRepo.createAdminBlockNotification(data);
     } catch (error) {
       console.error("Error in notification use case:", error);
       throw error;

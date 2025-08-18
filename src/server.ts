@@ -17,17 +17,17 @@ connectDB().then(() => {
 
 
 // Import controllers
-import fetchNotificationsControllerr from "../src/controllerr/implementation/fecthNotificationController";
-import storeNotificationController from '../src/controllerr/implementation/storeNotificationController'
-import handleCanceldoctorApplicationControllerr from "../src/controllerr/implementation/handleCanceldoctorApplicationCon";
-import stripModalController from "../src/controllerr/implementation/stripModalController";
+import fetchNotificationsControllerr from "./controller/implementation/fecthNotificationController";
+import storeNotificationController from './controller/implementation/storeNotificationController'
+import handleCanceldoctorApplicationControllerr from "./controller/implementation/handleCanceldoctorApplicationCon";
+import stripModalController from "./controller/implementation/stripModalController";
 
 
 //import services
-import fecthNotificationService from '../src/Servicess/implementation/fecthNotificationService';
-import storeNotificationservice from '../src/Servicess/implementation/storeNotificationservice';
-import handleCanceldoctorApplicationInService from "../src/Servicess/implementation/handleCanceldoctorApplicationInService";
-import stripeModalService from "../src/Servicess/implementation/stripeModalService";
+import fecthNotificationService from './Services/implementation/fecthNotificationService';
+import storeNotificationservice from './Services/implementation/storeNotificationservice';
+import handleCanceldoctorApplicationInService from "./Services/implementation/handleCanceldoctorApplicationInService";
+import stripeModalService from "./Services/implementation/stripeModalService";
 
 
 //import repo
@@ -41,14 +41,14 @@ import stripModalRepo from "../src/repositories/implementation/stripModalRepo";
 // Initialize dependency chain for handleCanceldoctorApplication
 const HandleCanceldoctorApplicationRepo=new handleCanceldoctorApplicationRepo()
 const HandleCanceldoctorApplicationInService=new handleCanceldoctorApplicationInService(HandleCanceldoctorApplicationRepo)
-const HandleCanceldoctorApplicationControllerr=new handleCanceldoctorApplicationControllerr(HandleCanceldoctorApplicationInService)
+const HandleCanceldoctorApplicationController=new handleCanceldoctorApplicationControllerr(HandleCanceldoctorApplicationInService)
 
 
 
 // Initialize dependency chain for fetching notifications
 const FecthNotificationRepo = new fecthNotificationRepo();
 const FecthNotificationService = new fecthNotificationService(FecthNotificationRepo);
-const FetchNotificationsControllerr = new fetchNotificationsControllerr(FecthNotificationService);
+const FetchNotificationsController = new fetchNotificationsControllerr(FecthNotificationService);
 
 // Initialize dependency chain for store notifications
 const StoreNotificationRepo=new storeNotificationRepo()
@@ -83,66 +83,10 @@ const io = new SocketIOServer(httpServer, {
 console.log('Socket.io server created with CORS settings');
 
 // Create notification namespace
-const notificationNamespace = io.of('/notifications');
-console.log('Notification namespace created');
+// const notificationNamespace = io.of('/notifications');
+// console.log('Notification namespace created');
 
-// Socket.io event handlers
-notificationNamespace.on('connection', (socket) => {
-  console.log('Notification client connected:', socket.id);
 
-  // Socket.io event handler for user notifications
-  socket.on('user_data', async (userData: { userEmail: string }, callback: (response: { 
-    success: boolean; 
-    notifications?: any[]; 
-    error?: string; 
-  }) => void) => {
-    console.log('Received user_data event with data:', userData);
-
-    try {
-      // You can implement this using your FetchNotificationsControllerr if needed
-      // const result = await FetchNotificationsControllerr.fetchingNotification({ request: { email: userData.userEmail } }, (err, response) => {
-      //   if (err) {
-      //     callback({ success: false, error: err.message });
-      //   } else {
-      //     callback({ success: true, notifications: response.notification || [] });
-      //   }
-      // });
-      
-      // For now, just return an empty success response
-      callback({ success: true, notifications: [] });
-    } catch (error: any) {
-      console.error('Error in user_data event handler:', error);
-      
-      // Invoke callback with error response
-      callback({ 
-        success: false, 
-        error: error.message 
-      });
-    }
-  });
-  
-  // Handle user subscription to their notifications
-  socket.on('subscribe_to_notifications', (userData: { userId: string }) => {
-    console.log(`User ${userData.userId} subscribed to notifications`);
-    socket.join(userData.userId);
-  });
-  
-  // Handle user unsubscription
-  socket.on('unsubscribe_from_notifications', (userData: { userId: string }) => {
-    console.log(`User ${userData.userId} unsubscribed from notifications`);
-    socket.leave(userData.userId);
-  });
-  
-  // Handle disconnection
-  socket.on('disconnect', () => {
-    console.log('Notification client disconnected:', socket.id);
-  });
-});
-
-// Function to emit notification to specific user
-export const emitNotification = (userId: string, notification: any) => {
-  notificationNamespace.to(userId).emit('new_notification', notification);
-};
 
 // Load proto file for gRPC
 console.log('Loading proto file for gRPC...');
@@ -178,11 +122,11 @@ console.log('Adding services to gRPC server...');
 grpcServer.addService(NotificationProto.NotificationService.service, {
   CreateNotification: StoreNotificationController.storeNotificationData,
   HandleStripeWebhook: StoreNotificationController.handleStripeWebhook,
-  handleCanceldoctorApplication: HandleCanceldoctorApplicationControllerr.handleCanceldoctorApplication,
-  fecthAllNotifications: FetchNotificationsControllerr.fetchingNotification.bind(FetchNotificationsControllerr),
+  handleCanceldoctorApplication: HandleCanceldoctorApplicationController.handleCancelDoctorApplication,
+  fecthAllNotifications: FetchNotificationsController.fetchNotifications.bind(FetchNotificationsController),
   rescheduleAppointmentNotification:StoreNotificationController.rescheduleAppointmentNotification,
-  CreateCheckoutSession: StripModalController.Handling_CreateCheckout_Session,
-   createAdminBlockingNotification:StoreNotificationController.creatingNotificationAdminBlock
+  CreateCheckoutSession: StripModalController.createCheckoutSession,
+   createAdminBlockingNotification:StoreNotificationController.createAdminBlockNotification
 });
 
 // HandleStripeWebhook

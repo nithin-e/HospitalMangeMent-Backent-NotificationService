@@ -1,5 +1,5 @@
 import { NotificationModel, INotification } from "../../entities/notification_Schema";
-import { IhandleCanceldoctorApplicationRepository } from "../interFace/handleCanceldoctorApplicationRepoInterFace";
+import { ICancelDoctorApplicationRepository } from "../interFace/handleCanceldoctorApplicationRepoInterFace";
 
 // Types for repository layer
 export interface CancelDoctorApplicationInput {
@@ -11,9 +11,9 @@ export interface CancelDoctorApplicationOutput extends INotification {
   _id: string;
 }
 
-export default class HandleCanceldoctorApplicationRepo implements IhandleCanceldoctorApplicationRepository {
+export default class CancelDoctorApplicationRepository  implements ICancelDoctorApplicationRepository {
   
-  handleCanceldoctorApplication = async (
+  handleCancelDoctorApplication = async (
     data: CancelDoctorApplicationInput
   ): Promise<CancelDoctorApplicationOutput> => {
     try {

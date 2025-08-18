@@ -1,7 +1,7 @@
 import * as grpc from '@grpc/grpc-js';
 
 import { AppointmentData, StripeSessionResponse } from "../../repositories/interFace/stripeModalInterFace";
-import { IHandlingStripPaymentService } from '../../Servicess/interFace/stripeModalServiceInterFace';
+import {  IStripePaymentService } from '../../Services/interFace/stripeModalServiceInterFace';
 import { GrpcCall, GrpcCallback } from '../../notificationTypes';
 
 interface CreateCheckoutSessionRequest {
@@ -16,14 +16,14 @@ interface CreateCheckoutSessionResponse {
 }
 
 
-export default class HandlingStripPaymentController  {
-    private stripePaymentService: IHandlingStripPaymentService;
+export default class StripePaymentController   {
+    private stripePaymentService: IStripePaymentService;
 
-    constructor(stripePaymentService: IHandlingStripPaymentService) {
+    constructor(stripePaymentService: IStripePaymentService) {
         this.stripePaymentService = stripePaymentService;
     }
 
-     Handling_CreateCheckout_Session= async(call: GrpcCall, callback: GrpcCallback): Promise<void>=> {
+     createCheckoutSession = async(call: GrpcCall, callback: GrpcCallback): Promise<void>=> {
         try {
             const request: CreateCheckoutSessionRequest = call.request;
             
@@ -31,7 +31,7 @@ export default class HandlingStripPaymentController  {
                 throw new Error('Appointment data is required');
             }
 
-            const response: StripeSessionResponse = await this.stripePaymentService.Handling_CreateCheckout_Session(request);
+            const response: StripeSessionResponse = await this.stripePaymentService.createCheckoutSession(request);
 
             const grpcResponse: CreateCheckoutSessionResponse = {
                 success: response.success,

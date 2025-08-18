@@ -1,5 +1,5 @@
 import { INotificationResponse } from "../../notificationTypes";
 
-export interface IFetchNotificationRepository {
+export interface IFetchNotificationService {
   fetchNotifications(email: string): Promise<INotificationResponse>;
 }

@@ -6,7 +6,7 @@ export interface Timestamp {
   export interface NotificationItem {
     id?: string;
     user_id?: string;
-    email?: string;  // Added email field to match repository query
+    email?: string; 
     message?: string;
     type?: number;
     is_read?: boolean;

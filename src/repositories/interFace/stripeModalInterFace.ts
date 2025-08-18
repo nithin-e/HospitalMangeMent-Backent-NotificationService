@@ -21,6 +21,11 @@ export interface StripeSessionResponse {
     error?: string;
 }
 
-export interface IHandlingStripPaymentRepository {
-    HandlingCreateCheckout_Session(appointmentData: { appointmentData: AppointmentData }): Promise<StripeSessionResponse>;
+// export interface IHandlingStripPaymentRepository {
+//     HandlingCreateCheckout_Session(appointmentData: { appointmentData: AppointmentData }): Promise<StripeSessionResponse>;
+// }
+
+
+export interface IStripePaymentRepository {
+  createCheckoutSession(data: { appointmentData: AppointmentData }): Promise<StripeSessionResponse>;
 }

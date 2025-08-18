@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { IHandlingStripPaymentRepository, AppointmentData, StripeSessionResponse } from "../interFace/stripeModalInterFace";
+import {  AppointmentData, StripeSessionResponse, IStripePaymentRepository } from "../interFace/stripeModalInterFace";
 
 const convertTo12HourFormat = (time24: string): string => {
     const [hours, minutes] = time24.split(':');
@@ -9,7 +9,7 @@ const convertTo12HourFormat = (time24: string): string => {
     return `${hour12}:${minutes} ${ampm}`;
 };
 
-export default class HandlingStripPaymentRepository implements IHandlingStripPaymentRepository {
+export default class StripePaymentRepository  implements IStripePaymentRepository {
     private stripe: Stripe;
 
     constructor() {
@@ -24,7 +24,7 @@ export default class HandlingStripPaymentRepository implements IHandlingStripPay
         });
     }
 
-    async HandlingCreateCheckout_Session(appointmentData: { appointmentData: AppointmentData }): Promise<StripeSessionResponse> {
+    async createCheckoutSession(appointmentData: { appointmentData: AppointmentData }): Promise<StripeSessionResponse> {
         try {
             console.log('Creating Stripe checkout session with appointment data:', appointmentData);
             

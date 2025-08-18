@@ -1,9 +1,9 @@
 import Stripe from 'stripe';
 import { NotificationModel } from '../../entities/notification_Schema';
 import https from 'https';
-import { IstoreNotificationRepository } from '../interFace/storeNotificationRepoInterFace';
+import { IStoreNotificationRepository } from '../interFace/storeNotificationRepoInterFace';
 
-// Types for repository methods
+
 export interface NotificationData {
   email: string;
 }
@@ -19,7 +19,7 @@ export interface AdminBlockData {
 }
 
 export interface NotificationResponse {
-  notification: any; // Replace with your actual notification type
+  notification: any; 
 }
 
 export interface RescheduleResponse {
@@ -38,7 +38,7 @@ export interface PaymentStatusUpdateResponse {
   success: boolean;
 }
 
-export default class StoreNotificationRepository implements IstoreNotificationRepository {
+export default class StoreNotificationRepository implements IStoreNotificationRepository {
   private stripe: Stripe;
   
   constructor() {
@@ -61,7 +61,7 @@ export default class StoreNotificationRepository implements IstoreNotificationRe
     });
   }
 
-  storingNotification_Datas = async (data: NotificationData): Promise<NotificationResponse> => {
+  storeNotificationData = async (data: NotificationData): Promise<NotificationResponse> => {
     try {
       const message = "Your application has been approved! Please complete the payment to join our medical team.";
       const paymentAmount = 10000;
@@ -185,7 +185,7 @@ export default class StoreNotificationRepository implements IstoreNotificationRe
     }
   }
 
-  reschedule_Appointment__Notification = async (data: RescheduleData): Promise<RescheduleResponse> => {
+  rescheduleAppointmentNotification = async (data: RescheduleData): Promise<RescheduleResponse> => {
     try {
       const notificationMessage = `Your appointment has been rescheduled to ${data.time}. Sorry for the inconvenience.`;
       
@@ -211,7 +211,7 @@ export default class StoreNotificationRepository implements IstoreNotificationRe
     }
   }
 
-  creatingNotification__AdminBlock = async (data: AdminBlockData): Promise<AdminBlockResponse> => {
+  createAdminBlockNotification = async (data: AdminBlockData): Promise<AdminBlockResponse> => {
     try {
       const newNotification = new NotificationModel({
         email: data.email,
