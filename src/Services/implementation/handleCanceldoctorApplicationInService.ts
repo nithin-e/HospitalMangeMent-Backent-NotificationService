@@ -1,11 +1,6 @@
-import HandleCanceldoctorApplicationRepository, { 
-  CancelDoctorApplicationInput, 
-  CancelDoctorApplicationOutput 
-} from "../../repositories/implementation/handleCanceldoctorApplicationRepo";
 import { ICancelDoctorApplicationRepository } from "../../repositories/interFace/handleCanceldoctorApplicationRepoInterFace";
 import { ICancelDoctorApplicationService } from "../interFace/handleCanceldoctorApplicationInInterFace";
 
-// Types for service layer
 export interface ServiceCancelDoctorApplicationInput {
   email: string;
   reasons: string[];
@@ -24,25 +19,31 @@ export interface ServiceCancelDoctorApplicationOutput {
   updatedAt?: Date;
 }
 
-export default class HandleCanceldoctorApplicationService implements ICancelDoctorApplicationService {
-  private handleCanceldoctorApplicationRepo: ICancelDoctorApplicationRepository;
-  
-  constructor(handleCanceldoctorApplicationRepo: ICancelDoctorApplicationRepository) {
-    this.handleCanceldoctorApplicationRepo = handleCanceldoctorApplicationRepo;
+export default class HandleCanceldoctorApplicationService
+  implements ICancelDoctorApplicationService
+{
+  private _handleCancelDoctorApplicationRepo: ICancelDoctorApplicationRepository;
+
+  constructor(
+    handleCancelDoctorApplicationRepo: ICancelDoctorApplicationRepository
+  ) {
+    this._handleCancelDoctorApplicationRepo = handleCancelDoctorApplicationRepo;
   }
 
   handleCancelDoctorApplication = async (
     data: ServiceCancelDoctorApplicationInput
   ): Promise<ServiceCancelDoctorApplicationOutput> => {
     try {
-      // Validate input
       if (!data.email || !Array.isArray(data.reasons)) {
-        throw new Error('Invalid input: email and reasons array are required');
+        throw new Error("Invalid input: email and reasons array are required");
       }
 
-      const response = await this.handleCanceldoctorApplicationRepo.handleCancelDoctorApplication(data);
-      console.log('Service response:', response);
-      
+      const response =
+        await this._handleCancelDoctorApplicationRepo.handleCancelDoctorApplication(
+          data
+        );
+      console.log("Service response:", response);
+
       return {
         _id: response._id,
         email: response.email,
@@ -53,11 +54,11 @@ export default class HandleCanceldoctorApplicationService implements ICancelDoct
         paymentStatus: response.paymentStatus,
         paymentAmount: response.paymentAmount,
         paymentLink: response.paymentLink,
-        updatedAt: response.updatedAt
+        updatedAt: response.updatedAt,
       };
     } catch (error) {
       console.error("Error in notification service:", error);
       throw error;
     }
-  }
+  };
 }

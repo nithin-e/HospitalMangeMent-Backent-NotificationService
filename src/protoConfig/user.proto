@@ -5,18 +5,10 @@ package user_package;
 service User {
   rpc UpdateDoctorStatusAfterAdminApprove(UpdateDoctorStatusAfterAdminApproveRequest) returns (UpdateDoctorStatusAfterAdminApproveResponse){}
 
-   rpc UpdateDoctorStatusAndUserRole(UpdateDoctorStatusAndUserRoleRequest) returns (UpdateDoctorStatusAndUserRoleResponse) {}
-
 }
 
 
-message UpdateDoctorStatusAndUserRoleRequest {
-   string email = 1;
-}
 
-message UpdateDoctorStatusAndUserRoleResponse {
- bool success = 1;
-}
 
 
 message UpdateDoctorStatusAfterAdminApproveRequest {

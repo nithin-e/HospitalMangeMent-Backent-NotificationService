@@ -19,8 +19,17 @@ service NotificationService {
 
     rpc createAdminBlockingNotification (createAdminBlockingNotificationRequest) returns (createAdminBlockingNotificationResponse){}
 
+    rpc UpdateDoctorStatusAfterAdminApprove (UpdateDoctorStatusAfterAdminApproveRequest) returns (UpdateDoctorStatusAfterAdminApproveResponse){}
+
 }
 
+message UpdateDoctorStatusAfterAdminApproveRequest {
+   string email =1;
+}
+
+message UpdateDoctorStatusAfterAdminApproveResponse{
+   bool success =1;
+}
 
 
 message createAdminBlockingNotificationRequest {

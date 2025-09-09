@@ -100,17 +100,4 @@ const handleStripeWebhook = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.handleStripeWebhook = handleStripeWebhook;
-// NOTE: You must configure Express to preserve the raw body for Stripe webhook verification:
-// Add this middleware before your routes:
-/*
-app.use(
-  express.json({
-    verify: (req, res, buf) => {
-      // Store raw body for Stripe webhook verification
-      if (req.originalUrl.startsWith('/webhook')) {
-        (req as any).rawBody = buf;
-      }
-    }
-  })
-);
-*/ 
+

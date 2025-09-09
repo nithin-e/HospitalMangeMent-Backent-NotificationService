@@ -6,7 +6,7 @@ export interface INotificationResponse {
   }
   
   export interface INotification {
-    id?: any;
+id: ObjectId | string;
     email: string;
     message: string;
     type: 'PAYMENT' | 'INFO' | 'ALERT';
@@ -19,7 +19,7 @@ export interface INotificationResponse {
   }
   
   export interface IFormattedNotification {
-     id: any;
+  id?: ObjectId | string;
     user_id: string;
     message: string;
     type: number;
@@ -75,6 +75,7 @@ export interface INotificationResponse {
 
 
   import * as grpc from '@grpc/grpc-js';
+import { ObjectId } from 'mongoose';
 
 export interface GrpcCall {
     request: any;
@@ -84,12 +85,8 @@ export interface GrpcCall {
     // Add other gRPC call methods you need
 }
 
-export interface GrpcCallback {
-    (error: grpc.ServiceError | null, response: any): void;
+export interface GrpcCallback<T = unknown> {
+    (error: grpc.ServiceError | null, response: T): void;
 }
 
-// export interface ServiceError extends grpc.ServiceError {
-//     code: grpc.status;
-//     message: string;
-//     details?: string;
-// }
+

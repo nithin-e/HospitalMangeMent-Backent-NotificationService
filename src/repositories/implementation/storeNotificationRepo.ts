@@ -2,6 +2,7 @@ import Stripe from 'stripe';
 import { NotificationModel } from '../../entities/notification_Schema';
 import https from 'https';
 import { IStoreNotificationRepository } from '../interFace/storeNotificationRepoInterFace';
+import { FilterQuery } from 'mongoose';
 
 
 export interface NotificationData {
@@ -36,6 +37,13 @@ export interface AdminBlockResponse {
 
 export interface PaymentStatusUpdateResponse {
   success: boolean;
+}
+
+interface Notification {
+  email: string;
+  paymentStatus: 'PENDING' | 'SUCCESS' | 'FAILED';
+  transactionId?: string;
+  paymentCompletedAt?: Date;
 }
 
 export default class StoreNotificationRepository implements IStoreNotificationRepository {
@@ -163,7 +171,10 @@ export default class StoreNotificationRepository implements IStoreNotificationRe
 
   async updatePaymentStatus(email: string, status: string, transactionId?: string): Promise<boolean> {
     try {
-      const query: any = { email, paymentStatus: 'PENDING' };
+
+          const query: FilterQuery<Notification> = { email, paymentStatus: 'PENDING' };
+
+     
       if (transactionId) {
         query.transactionId = transactionId;
       }

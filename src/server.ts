@@ -7,6 +7,7 @@ import connectDB from "./config/mongo";
 import path from 'path';
 import { Server as SocketIOServer } from 'socket.io';
 
+
 // MongoDB connection
 console.log('Attempting to connect to MongoDB...');
 connectDB().then(() => {
@@ -14,6 +15,10 @@ connectDB().then(() => {
 }).catch(err => {
   console.error('MongoDB connection failed:', err);
 });
+
+
+
+
 
 
 // Import controllers
@@ -35,6 +40,7 @@ import fecthNotificationRepo from "../src/repositories/implementation/fecthNotif
 import storeNotificationRepo from "../src/repositories/implementation/storeNotificationRepo";
 import handleCanceldoctorApplicationRepo from "../src/repositories/implementation/handleCanceldoctorApplicationRepo";
 import stripModalRepo from "../src/repositories/implementation/stripModalRepo";
+import { Consumer } from './event/consumer';
 
 
 
@@ -61,6 +67,11 @@ const StripeModalService=new stripeModalService(StripModalRepo)
 const StripModalController=new stripModalController(StripeModalService)
 
 
+const consumer=new Consumer(StoreNotificationController)//injecr the controller 
+consumer.start()
+.catch(err=>{
+  process.exit(1)
+})
 
 // Create Express app and HTTP server for Socket.io
 const app = express();
@@ -83,8 +94,8 @@ const io = new SocketIOServer(httpServer, {
 console.log('Socket.io server created with CORS settings');
 
 // Create notification namespace
-// const notificationNamespace = io.of('/notifications');
-// console.log('Notification namespace created');
+const notificationNamespace = io.of('/notifications');
+console.log('Notification namespace created');
 
 
 
@@ -121,7 +132,7 @@ console.log('gRPC server created');
 console.log('Adding services to gRPC server...');
 grpcServer.addService(NotificationProto.NotificationService.service, {
   CreateNotification: StoreNotificationController.storeNotificationData,
-  HandleStripeWebhook: StoreNotificationController.handleStripeWebhook,
+  // HandleStripeWebhook: StoreNotificationController.handleStripeWebhook,
   handleCanceldoctorApplication: HandleCanceldoctorApplicationController.handleCancelDoctorApplication,
   fecthAllNotifications: FetchNotificationsController.fetchNotifications.bind(FetchNotificationsController),
   rescheduleAppointmentNotification:StoreNotificationController.rescheduleAppointmentNotification,
@@ -149,21 +160,21 @@ const startGrpcServer = () => {
 };
 
 // Start HTTP server for Socket.io
-const startSocketServer = () => {
-  const port = process.env.NOTIFICATION_SOCKET_PORT || '5002';
-  console.log(`Preparing to start Socket.io server on port ${port}`);
+// const startSocketServer = () => {
+//   const port = process.env.NOTIFICATION_SOCKET_PORT || '5002';
+//   console.log(`Preparing to start Socket.io server on port ${port}`);
   
-  httpServer.listen(port, () => {
-    console.log("\x1b[42m\x1b[30m%s\x1b[0m", `🚀 [INFO] Socket.io Notification server started on port: ${port} ✅`);
-  });
+//   httpServer.listen(port, () => {
+//     console.log("\x1b[42m\x1b[30m%s\x1b[0m", `🚀 [INFO] Socket.io Notification server started on port: ${port} ✅`);
+//   });
   
-  // Add error handler for the HTTP server
-  httpServer.on('error', (error) => {
-    console.error('HTTP Server error:', error);
-  });
-};
+//   // Add error handler for the HTTP server
+//   httpServer.on('error', (error) => {
+//     console.error('HTTP Server error:', error);
+//   });
+// };
 
 // Start both servers
 console.log('Starting servers...');
 startGrpcServer();
-startSocketServer();
+// startSocketServer();

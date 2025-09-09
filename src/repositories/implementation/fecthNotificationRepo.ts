@@ -1,3 +1,4 @@
+import { ObjectId } from "mongoose";
 import {NotificationModel} from "../../entities/notification_Schema";
 import { INotification, INotificationResponse } from "../../notificationTypes";
 import {  IFetchNotificationRepository } from "../interFace/fecthNotificationRepoInterFace";
@@ -19,7 +20,7 @@ import {  IFetchNotificationRepository } from "../interFace/fecthNotificationRep
 
   
       const notificationData: INotification = {
-         id: notifications._id,
+       id: notifications._id as ObjectId|string,
         email: notifications.email,
         message: notifications.message,
         type: notifications.type,
@@ -31,7 +32,7 @@ import {  IFetchNotificationRepository } from "../interFace/fecthNotificationRep
         updatedAt: notifications.updatedAt
       };
 
-      console.log('repo res', notificationData);
+      
       
       return { 
         success: true, 
