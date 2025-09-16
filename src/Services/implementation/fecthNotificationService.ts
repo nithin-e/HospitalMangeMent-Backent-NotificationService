@@ -1,6 +1,7 @@
 import { IFetchNotificationService } from "../interFace/fecthNotificationServiceInterFace";
 import { IFetchNotificationRepository } from "../../repositories/interFace/fecthNotificationRepoInterFace";
 import { INotificationResponse } from "../../notificationTypes";
+import { INotificationResponsee } from "repositories/implementation/fecthNotificationRepo";
 
 export default class FecthNotificationService
   implements IFetchNotificationService
@@ -11,7 +12,7 @@ export default class FecthNotificationService
     this._fetchNotificationRepository = fetchNotificationRepo;
   }
 
-  async fetchNotifications(email: string): Promise<INotificationResponse> {
+  async fetchNotifications(email: string): Promise<INotificationResponsee> {
     try {
       console.log("Service fetching notifications for:", email);
 
@@ -19,7 +20,7 @@ export default class FecthNotificationService
         throw new Error("Email is required");
       }
 
-      const response: INotificationResponse =
+      const response: INotificationResponsee =
         await this._fetchNotificationRepository.fetchNotifications(email);
 
       return response;

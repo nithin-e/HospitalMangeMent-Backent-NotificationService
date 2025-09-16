@@ -1,8 +1,8 @@
 // notification.model.ts
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, ObjectId } from 'mongoose';
 
 export interface INotification extends Document {
-  id?: string;
+id?: string ; 
   email: string;
   message: string;
   type: 'PAYMENT' | 'INFO' | 'ALERT';

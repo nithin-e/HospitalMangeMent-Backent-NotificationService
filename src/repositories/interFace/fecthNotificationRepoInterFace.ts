@@ -1,5 +1,5 @@
-import { INotificationResponse } from "../../notificationTypes";
+import {  INotificationResponsee } from "repositories/implementation/fecthNotificationRepo";
 
 export interface IFetchNotificationRepository {
-  fetchNotifications(email: string): Promise<INotificationResponse>;
+  fetchNotifications(email: string): Promise<INotificationResponsee>;
 }

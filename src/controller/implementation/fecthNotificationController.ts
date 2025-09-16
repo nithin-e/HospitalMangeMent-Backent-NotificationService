@@ -6,6 +6,7 @@ import {
   IGrpcNotificationResponse,
   INotificationResponse,
 } from "../../notificationTypes";
+import { INotificationResponsee } from "repositories/implementation/fecthNotificationRepo";
 
 export default class NotificationController {
   private _fetchNotificationService: IFetchNotificationService;
@@ -30,7 +31,7 @@ export default class NotificationController {
         throw new Error("FecthNotificationService is not initialized");
       }
 
-      const response: INotificationResponse =
+      const response: INotificationResponsee =
         await this._fetchNotificationService.fetchNotifications(email);
 
       const formattedNotifications: IFormattedNotification[] =
