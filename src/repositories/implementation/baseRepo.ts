@@ -1,6 +1,5 @@
 import { Model, Document, FilterQuery } from "mongoose";
-import { IBaseRepository } from "repositories/interFace/IbaseRepository";
-
+import { IBaseRepository } from "repositories/interFace/IBaseRepository";
 
 export class BaseRepository<T extends Document> implements IBaseRepository<T> {
   protected model: Model<T>;

@@ -1,20 +1,41 @@
 import amqp from "amqplib";
 
-const rabbitUrl =
-  process.env.NODE_ENV === "dev"
-    ? process.env.RABBIT_URL_LOCAL || "amqp://localhost:5672"
-    : process.env.RABBIT_URL || "amqp://rabbitmq:5672";
+// ✅ Smart logic - detect if we're in Docker or local environment
+function getRabbitUrl() {
+  // Check if we're in Docker (RABBIT_URL will be set with rabbitmq service name)
+  if (process.env.RABBIT_URL) {
+    return process.env.RABBIT_URL;
+  }
+  
+  // For local development outside Docker
+  if (process.env.NODE_ENV === "dev" && process.env.RABBIT_URL_LOCAL) {
+    return process.env.RABBIT_URL_LOCAL;
+  }
+  
+  // Default fallback - assume Docker environment
+  return "amqp://admin:admin123@rabbitmq:5672";
+}
 
-export async function createRabbit() {
+const rabbitUrl = getRabbitUrl();
+
+// Retry configuration
+const MAX_RETRIES = 10;
+const RETRY_DELAY = 5000; // 5 seconds
+
+async function sleep(ms:any) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export async function createRabbit(retries = 0) {
   try {
-    console.log("🔄 Connecting to RabbitMQ at:", rabbitUrl);
+    console.log(`🔄 Connecting to RabbitMQ at: ${rabbitUrl} (attempt ${retries + 1}/${MAX_RETRIES})`);
 
     const conn = await amqp.connect(rabbitUrl, {
       heartbeat: 60,
-      connectionTimeout: 10000,
+      connectionTimeout: 15000, // Increased timeout
       frameMax: 8192,
       socketOptions: {
-        timeout: 10000,
+        timeout: 15000,
         noDelay: true,
         keepAlive: true,
         keepAliveDelay: 30000,
@@ -52,7 +73,17 @@ export async function createRabbit() {
 
     return { conn, ch };
   } catch (error) {
-    console.error("❌ Failed to create RabbitMQ connection:", error);
-    throw error;
+    console.error(`❌ Failed to create RabbitMQ connection (attempt ${retries + 1}):`, error);
+    
+    if (retries < MAX_RETRIES - 1) {
+      console.log(`⏳ Retrying in ${RETRY_DELAY / 1000} seconds...`);
+      await sleep(RETRY_DELAY);
+      return createRabbit(retries + 1);
+    } else {
+      console.error("❌ Max retries reached. RabbitMQ connection failed permanently.");
+      throw error;
+    }
   }
 }
+
+// Alternative: Create a function that waits for RabbitMQ to be ready

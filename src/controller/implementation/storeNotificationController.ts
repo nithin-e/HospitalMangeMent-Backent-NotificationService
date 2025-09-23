@@ -1,76 +1,14 @@
 import * as grpc from "@grpc/grpc-js";
-import { IStoreNotificationService } from "../../Services/interFace/storeNotificationServiceInterFace";
+import { IStoreNotificationService } from "../../Services/interFace/IStoreNotificationService";
+import {
+  GrpcCallback,
+  GrpcCalls,
+  IEventData,
+  StoreNotificationResponse,
+} from "interfaces/types";
 
-interface ProtoNotification {
-  id: string;
-  user_id: string;
-  title: string;
-  message: string;
-  type: number;
-  is_read: boolean;
-  created_at: { seconds: number; nanos: number };
-  payment_amount: number;
-  payment_link: string;
-  payment_status: number;
-}
-
-interface GrpcCall {
-  request: any;
-}
-
-
-interface GrpcError {
-  code: number;
-  message: string;
-}
-
-interface GrpcCallback<TResponse = unknown> {
-  (error: GrpcError | null, response: TResponse | null): void;
-}
-interface StoreNotificationResponse {
-  notification: ProtoNotification;
-}
-
-
-
-interface IEventData {
-  email?: string;
-  transactionId?: string;
-}
-
-function convertTypeToProtoEnum(type: string): number {
-  switch (type) {
-    case "INFO":
-      return 1;
-    case "APPROVAL":
-      return 2;
-    case "PAYMENT":
-      return 3;
-    case "ALERT":
-      return 4;
-    default:
-      return 0;
-  }
-}
-
-function convertStatusToProtoEnum(status: string): number {
-  switch (status) {
-    case "PENDING":
-      return 1;
-    case "COMPLETED":
-      return 2;
-    case "FAILED":
-      return 3;
-    default:
-      return 0;
-  }
-}
-
-function dateToTimestamp(date: Date): { seconds: number; nanos: number } {
-  const seconds = Math.floor(date.getTime() / 1000);
-  const nanos = (date.getTime() % 1000) * 1000000;
-  return { seconds, nanos };
-}
+import { StoreNotificationMapper } from "mappers/StoreNotificationMapper";
+import { GrpcErrorHandler } from "utility/GrpcErrorHandler";
 
 export default class StoreNotificationController {
   private _storeNotificationService: IStoreNotificationService;
@@ -79,9 +17,16 @@ export default class StoreNotificationController {
     this._storeNotificationService = storeNotificationService;
   }
 
+  /**
+   * Stores a new notification in the database.
+   *
+   * @param call - gRPC request with email
+   * @param callback - gRPC callback with response
+   */
+
   storeNotificationData = async (
-    call: GrpcCall,
-  callback: GrpcCallback<StoreNotificationResponse>
+    call: GrpcCalls,
+    callback: GrpcCallback<StoreNotificationResponse>
   ): Promise<void> => {
     try {
       const { email } = call.request;
@@ -95,29 +40,20 @@ export default class StoreNotificationController {
 
       const { notification } = dbResponse;
 
-      const protoNotification: ProtoNotification = {
-        id: notification.id.toString(),
-        user_id: notification.email || "",
-        title: "",
-        message: notification.message,
-        type: convertTypeToProtoEnum(notification.type),
-        is_read: notification.isRead,
-        created_at: dateToTimestamp(notification.createdAt),
-        payment_amount: Number(notification.paymentAmount) || 0,
-        payment_link: notification.paymentLink || "",
-        payment_status: convertStatusToProtoEnum(notification.paymentStatus),
-      };
+      const protoNotification =
+        StoreNotificationMapper.toGrpcResponse(notification);
 
       callback(null, { notification: protoNotification });
     } catch (error) {
-      const grpcError = {
-        code: grpc.status.INTERNAL,
-        message: (error as Error).message,
-      };
-      callback(grpcError, null);
+      callback(GrpcErrorHandler.internal(error), null);
+      throw error;
     }
   };
-
+  /**
+   * Processes Stripe webhook events to update notifications.
+   *
+   * @param eventType - webhook payload with email and transactionId
+   */
   handleStripeWebhook = async (eventType: IEventData): Promise<void> => {
     try {
       const email = eventType.email;
@@ -139,8 +75,14 @@ export default class StoreNotificationController {
     }
   };
 
+  /**
+   * Sends a notification when an appointment is rescheduled.
+   *
+   * @param call - gRPC request with email and time
+   * @param callback - gRPC callback with success response
+   */
   rescheduleAppointmentNotification = async (
-    call: GrpcCall,
+    call: GrpcCalls,
     callback: GrpcCallback
   ): Promise<void> => {
     try {
@@ -161,16 +103,18 @@ export default class StoreNotificationController {
 
       callback(null, { success: true });
     } catch (error) {
-      const grpcError = {
-        code: grpc.status.INTERNAL,
-        message: (error as Error).message,
-      };
-      callback(grpcError, null);
+      callback(GrpcErrorHandler.internal(error), null);
     }
   };
 
+  /**
+   * Creates a notification when an admin blocks a doctor.
+   *
+   * @param call - gRPC request with email and reason
+   * @param callback - gRPC callback with success response
+   */
   createAdminBlockNotification = async (
-    call: GrpcCall,
+    call: GrpcCalls,
     callback: GrpcCallback
   ): Promise<void> => {
     try {
@@ -184,11 +128,8 @@ export default class StoreNotificationController {
 
       callback(null, dbResponse);
     } catch (error) {
-      const grpcError = {
-        code: grpc.status.INTERNAL,
-        message: (error as Error).message,
-      };
-      callback(grpcError, null);
+      callback(GrpcErrorHandler.internal(error), null);
+      throw error;
     }
   };
 }

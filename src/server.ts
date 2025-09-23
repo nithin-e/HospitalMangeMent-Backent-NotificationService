@@ -19,47 +19,25 @@ connectDB().then(() => {
 
 
 // Change all these imports from "../src/" to "./"
-import fetchNotificationsControllerr from "./controller/implementation/fecthNotificationController";
+import fetchNotificationsControllerr from "./controller/implementation/notificationController";
 import storeNotificationController from './controller/implementation/storeNotificationController'
-import handleCanceldoctorApplicationControllerr from "./controller/implementation/handleCanceldoctorApplicationCon";
+import handleCanceldoctorApplicationControllerr from "./controller/implementation/canceldoctorApplicationController";
 import stripModalController from "./controller/implementation/stripModalController";
 
 //import services
-import fecthNotificationService from './Services/implementation/fecthNotificationService';
-import storeNotificationservice from './Services/implementation/storeNotificationservice';
-import handleCanceldoctorApplicationInService from "./Services/implementation/handleCanceldoctorApplicationInService";
+import fecthNotificationService from './Services/implementation/notificationService';
+import storeNotificationservice from './Services/implementation/storeNotificationService';
+import handleCanceldoctorApplicationInService from "./Services/implementation/canceldoctorApplicationInService";
 import stripeModalService from "./Services/implementation/stripeModalService";
 
 //import repo
-import fecthNotificationRepo from "./repositories/implementation/fecthNotificationRepo";
-import storeNotificationRepo from "./repositories/implementation/storeNotificationRepo";
-import handleCanceldoctorApplicationRepo from "./repositories/implementation/handleCanceldoctorApplicationRepo";
-import stripModalRepo from "./repositories/implementation/stripModalRepo";
+import fecthNotificationRepo from "./repositories/implementation/notificationRepository";
+import storeNotificationRepo from "./repositories/implementation/storeNotificationReposirory";
+import handleCanceldoctorApplicationRepo from "./repositories/implementation/canceldoctorApplicationRepository";
+import stripModalRepo from "./repositories/implementation/stripModalRepository";
 import { Consumer } from './event/consumer';
 
 
-
-
-// // Import controllers
-// import fetchNotificationsControllerr from "./controller/implementation/fecthNotificationController";
-// import storeNotificationController from './controller/implementation/storeNotificationController'
-// import handleCanceldoctorApplicationControllerr from "./controller/implementation/handleCanceldoctorApplicationCon";
-// import stripModalController from "./controller/implementation/stripModalController";
-
-
-// //import services
-// import fecthNotificationService from './Services/implementation/fecthNotificationService';
-// import storeNotificationservice from './Services/implementation/storeNotificationservice';
-// import handleCanceldoctorApplicationInService from "./Services/implementation/handleCanceldoctorApplicationInService";
-// import stripeModalService from "./Services/implementation/stripeModalService";
-
-
-// //import repo
-// import fecthNotificationRepo from "../src/repositories/implementation/fecthNotificationRepo";
-// import storeNotificationRepo from "../src/repositories/implementation/storeNotificationRepo";
-// import handleCanceldoctorApplicationRepo from "../src/repositories/implementation/handleCanceldoctorApplicationRepo";
-// import stripModalRepo from "../src/repositories/implementation/stripModalRepo";
-// import { Consumer } from './event/consumer';
 
 
 
@@ -162,11 +140,11 @@ console.log('Services added to gRPC server');
 
 // Start gRPC server
 const startGrpcServer = () => {
-  const port = process.env.Notification_GRPC_PORT || '5001';
-  const domain = process.env.NODE_ENV === 'dev' ? process.env.DEV_DOMAIN : process.env.PRO_DOMAIN_USER;
-  console.log(`Preparing to start gRPC server on ${domain}:${port}`);
+  console.log(`Preparing to start gRPC server on 0.0.0.0`);
   
-  grpcServer.bindAsync(`${domain}:${port}`, grpc.ServerCredentials.createInsecure(), (err, bindPort) => {
+  const GRPC_PORT= process.env.GRPC_PORT
+
+  grpcServer.bindAsync(`0.0.0.0:${GRPC_PORT}`, grpc.ServerCredentials.createInsecure(), (err, bindPort) => {
     if (err) {
       console.error("Error starting gRPC server:", err);
       return;
@@ -175,7 +153,6 @@ const startGrpcServer = () => {
     console.log("\x1b[42m\x1b[30m%s\x1b[0m", `🚀 [INFO] gRPC Notification server started on port: ${bindPort} ✅`);
   });
 };
-
 
 
 // Start both servers

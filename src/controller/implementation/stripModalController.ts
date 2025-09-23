@@ -1,22 +1,12 @@
 import * as grpc from "@grpc/grpc-js";
 
-import {
-  AppointmentData,
-  StripeSessionResponse,
-} from "../../repositories/interFace/stripeModalInterFace";
-import { IStripePaymentService } from "../../Services/interFace/stripeModalServiceInterFace";
+import { IStripePaymentService } from "../../Services/interFace/IStripeModalService";
 import { GrpcCall, GrpcCallback } from "../../notificationTypes";
-
-interface CreateCheckoutSessionRequest {
-  appointmentData: AppointmentData;
-}
-
-interface CreateCheckoutSessionResponse {
-  success: boolean;
-  session_id?: string;
-  checkout_url?: string;
-  error?: string;
-}
+import {
+  CreateCheckoutSessionRequest,
+  CreateCheckoutSessionResponse,
+  StripeSessionResponse,
+} from "interfaces/types";
 
 export default class StripePaymentController {
   private _stripePaymentService: IStripePaymentService;
@@ -24,6 +14,13 @@ export default class StripePaymentController {
   constructor(stripePaymentService: IStripePaymentService) {
     this._stripePaymentService = stripePaymentService;
   }
+
+  /**
+   * Creates a Stripe checkout session for appointment payment.
+   *
+   * @param call - gRPC request with appointment data
+   * @param callback - gRPC callback with Stripe session response
+   */
 
   createCheckoutSession = async (
     call: GrpcCall,
@@ -54,7 +51,8 @@ export default class StripePaymentController {
         code: grpc.status.INTERNAL,
         message: error instanceof Error ? error.message : "Unknown error",
       };
-      //  callback(grpcError);
+
+      throw error;
     }
   };
 }

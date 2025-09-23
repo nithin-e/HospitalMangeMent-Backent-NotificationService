@@ -1,32 +1,28 @@
-import { IStoreNotificationService } from "../interFace/storeNotificationServiceInterFace";
-import StoreNotificationRepository, {
+import { IStoreNotificationService } from "../interFace/IStoreNotificationService";
+import { NotificationResponse } from "../../repositories/implementation/storeNotificationReposirory";
+import { IStoreNotificationRepository } from "../../repositories/interFace/IStoreNotificationRepository";
+import { UserService } from "../../protoConfig/user.client";
+import {
+  AdminBlockData,
+  AdminBlockResponse,
   NotificationData,
   RescheduleData,
-  AdminBlockData,
-  NotificationResponse,
   RescheduleResponse,
-  AdminBlockResponse,
-} from "../../repositories/implementation/storeNotificationRepo";
-import { IStoreNotificationRepository } from "../../repositories/interFace/storeNotificationRepoInterFace";
-import { UserService } from "../../protoConfig/user.client";
+  WebhookResponse,
+} from "interfaces/types";
 
-export interface WebhookEventData {
-  type: string;
-  data: {
-    object: {
-      metadata?: {
-        email?: string;
-        transactionId?: string;
-      };
-      [key: string]: any;
-    };
-  };
-}
-
-export interface WebhookResponse {
-  success: boolean;
-  message: string;
-}
+// export interface WebhookEventData {
+//   type: string;
+//   data: {
+//     object: {
+//       metadata?: {
+//         email?: string;
+//         transactionId?: string;
+//       };
+//       [key: string]: any;
+//     };
+//   };
+// }
 
 export default class StoreNotificationService
   implements IStoreNotificationService
@@ -37,6 +33,12 @@ export default class StoreNotificationService
     this._storeNotificationRepo = storeNotificationRepo;
   }
 
+  /**
+   * Stores notification data and updates doctor status after admin approval.
+   *
+   * @param data - Notification data
+   * @returns Stored notification response
+   */
   storeNotificationData = async (
     data: NotificationData
   ): Promise<NotificationResponse> => {
@@ -44,7 +46,6 @@ export default class StoreNotificationService
       const response = await this._storeNotificationRepo.storeNotificationData(
         data
       );
-      console.log("check this response after storing notification", response);
 
       const updateUserStatus = (): Promise<boolean> => {
         return new Promise((resolve, reject) => {
@@ -86,7 +87,13 @@ export default class StoreNotificationService
     }
   };
 
-  // after the payment changing the user role
+  /**
+   * Updates user payment status after a successful webhook event.
+   *
+   * @param email - User email
+   * @param transactionId - Stripe transaction ID
+   * @returns Webhook processing result
+   */
   async processWebhookEvent(
     email: string,
     transactionId: string
@@ -120,6 +127,13 @@ export default class StoreNotificationService
     }
   }
 
+  /**
+   * Reschedules an appointment notification.
+   *
+   * @param data - Reschedule request
+   * @returns Reschedule response
+   */
+
   rescheduleAppointmentNotification = async (
     data: RescheduleData
   ): Promise<RescheduleResponse> => {
@@ -133,6 +147,12 @@ export default class StoreNotificationService
     }
   };
 
+  /**
+   * Creates a notification when an admin blocks a user.
+   *
+   * @param data - Admin block request
+   * @returns Admin block response
+   */
   createAdminBlockNotification = async (
     data: AdminBlockData
   ): Promise<AdminBlockResponse> => {

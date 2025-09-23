@@ -3,12 +3,18 @@
   "version": "1.0.0",
   "description": "Notification microservice using gRPC and Express",
   "main": "dist/server.js",
+
+
+
   "scripts": {
     "dev": "nodemon src/server.ts",
     "build": "tsc && npm run copy-protos",
-    "copy-protos": "mkdir -p dist/proto && cp src/protoConfig/*.proto dist/proto/ 2>/dev/null || true && cp src/proto/*.proto dist/proto/ 2>/dev/null || true",
+    "copy-protos": "mkdir -p dist/protoConfig && mkdir -p dist/proto && cp src/protoConfig/*.proto dist/protoConfig/ 2>/dev/null || true && cp src/proto/*.proto dist/proto/ 2>/dev/null || true",
     "start": "node dist/server.js"
   },
+
+
+
   "keywords": [],
   "author": "",
   "license": "ISC",

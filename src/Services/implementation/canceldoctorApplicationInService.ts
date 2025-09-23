@@ -1,23 +1,9 @@
-import { ICancelDoctorApplicationRepository } from "../../repositories/interFace/handleCanceldoctorApplicationRepoInterFace";
-import { ICancelDoctorApplicationService } from "../interFace/handleCanceldoctorApplicationInInterFace";
-
-export interface ServiceCancelDoctorApplicationInput {
-  email: string;
-  reasons: string[];
-}
-
-export interface ServiceCancelDoctorApplicationOutput {
-  _id: string;
-  email: string;
-  message: string;
-  type: string;
-  isRead: boolean;
-  createdAt: Date;
-  paymentStatus: string;
-  paymentAmount?: number;
-  paymentLink?: string;
-  updatedAt?: Date;
-}
+import {
+  ServiceCancelDoctorApplicationInput,
+  ServiceCancelDoctorApplicationOutput,
+} from "interfaces/types";
+import { ICancelDoctorApplicationRepository } from "../../repositories/interFace/ICanceldoctorApplicationRepository";
+import { ICancelDoctorApplicationService } from "../interFace/ICanceldoctorApplication";
 
 export default class HandleCanceldoctorApplicationService
   implements ICancelDoctorApplicationService
@@ -29,6 +15,13 @@ export default class HandleCanceldoctorApplicationService
   ) {
     this._handleCancelDoctorApplicationRepo = handleCancelDoctorApplicationRepo;
   }
+
+  /**
+   * Cancels a doctor application by storing cancellation details.
+   *
+   * @param data - Input containing doctor email and cancellation reasons
+   * @returns Cancellation response with metadata and payment info
+   */
 
   handleCancelDoctorApplication = async (
     data: ServiceCancelDoctorApplicationInput
@@ -42,7 +35,6 @@ export default class HandleCanceldoctorApplicationService
         await this._handleCancelDoctorApplicationRepo.handleCancelDoctorApplication(
           data
         );
-      console.log("Service response:", response);
 
       return {
         _id: response._id,

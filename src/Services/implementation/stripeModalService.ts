@@ -1,9 +1,6 @@
-import { IStripePaymentService } from "../interFace/stripeModalServiceInterFace";
-import {
-  AppointmentData,
-  IStripePaymentRepository,
-  StripeSessionResponse,
-} from "../../repositories/interFace/stripeModalInterFace";
+import { IStripePaymentService } from "../interFace/IStripeModalService";
+import { IStripePaymentRepository } from "../../repositories/interFace/IStripeModalRepository";
+import { AppointmentData, StripeSessionResponse } from "interfaces/types";
 
 export default class StripePaymentService implements IStripePaymentService {
   private _stripeModalRepo: IStripePaymentRepository;
@@ -11,6 +8,13 @@ export default class StripePaymentService implements IStripePaymentService {
   constructor(stripeModalRepo: IStripePaymentRepository) {
     this._stripeModalRepo = stripeModalRepo;
   }
+
+  /**
+   * Creates a Stripe checkout session for an appointment.
+   *
+   * @param appointmentData - Appointment details
+   * @returns Stripe checkout session response
+   */
 
   async createCheckoutSession(appointmentData: {
     appointmentData: AppointmentData;

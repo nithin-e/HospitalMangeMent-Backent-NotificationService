@@ -108,17 +108,4 @@ export const handleStripeWebhook = async (req: express.Request, res: express.Res
     res.status(400).send(`Webhook Error: ${(err as Error).message}`);
   }
 };
-// NOTE: You must configure Express to preserve the raw body for Stripe webhook verification:
-// Add this middleware before your routes:
-/*
-app.use(
-  express.json({
-    verify: (req, res, buf) => {
-      // Store raw body for Stripe webhook verification
-      if (req.originalUrl.startsWith('/webhook')) {
-        (req as any).rawBody = buf;
-      }
-    }
-  })
-);
-*/
+

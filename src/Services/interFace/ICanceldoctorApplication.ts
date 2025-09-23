@@ -1,6 +1,7 @@
-import { ServiceCancelDoctorApplicationInput, ServiceCancelDoctorApplicationOutput } from "../implementation/handleCanceldoctorApplicationInService";
-
-
+import {
+  ServiceCancelDoctorApplicationInput,
+  ServiceCancelDoctorApplicationOutput,
+} from "interfaces/types";
 
 export interface ICancelDoctorApplicationService {
   handleCancelDoctorApplication(

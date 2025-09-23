@@ -1,6 +1,7 @@
-import { CancelDoctorApplicationInput, CancelDoctorApplicationOutput } from "../implementation/handleCanceldoctorApplicationRepo";
-
-
+import {
+  CancelDoctorApplicationInput,
+  CancelDoctorApplicationOutput,
+} from "interfaces/types";
 
 export interface ICancelDoctorApplicationRepository {
   handleCancelDoctorApplication(
