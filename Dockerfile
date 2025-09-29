@@ -1,37 +1,30 @@
-# ----------- Build Stage -----------
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 
 WORKDIR /app
 
+# Copy package files first
 COPY package*.json ./
 
+# Install dependencies
 RUN npm install
 
+# Copy source code
 COPY . .
 
-RUN mkdir -p dist/proto && cp -r src/proto/* dist/proto/ || true
+# Debug: Show what we copied
+RUN echo "=== Source files ===" && ls -la src/
 
-RUN npm run build
+# Debug: Show tsconfig
+RUN echo "=== tsconfig.json ===" && cat tsconfig.json
 
+# Build with verbose output
+RUN echo "=== Building ===" && npm run build
 
-# ----------- Production Stage -----------
-FROM node:20-alpine AS runner
+# Debug: Show build output
+RUN echo "=== Build output ===" && ls -la dist/ 2>/dev/null || echo "No dist directory found"
 
-WORKDIR /app
-
-# Copy package files to install only prod dependencies
-COPY package*.json ./
-
-RUN npm install --omit=dev
-
-# Copy build output from builder
-COPY --from=builder /app/dist ./dist
-
-# Copy proto files (in case they are needed at runtime)
-COPY --from=builder /app/dist/proto ./dist/proto
+# Debug: Show if server.js exists
+RUN test -f dist/server.js && echo "server.js found" || echo "server.js NOT found"
 
 EXPOSE 5000
-
-# Debug and start
-CMD echo "=== Starting Application ===" && \
-    node dist/server.js
+CMD ["npm", "start"]

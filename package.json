@@ -3,40 +3,49 @@
   "version": "1.0.0",
   "description": "Notification microservice using gRPC and Express",
   "main": "dist/server.js",
-
-
-
   "scripts": {
-    "dev": "nodemon src/server.ts",
+    "dev": "tsx watch src/server.ts",
     "build": "tsc && npm run copy-protos",
     "copy-protos": "mkdir -p dist/protoConfig && mkdir -p dist/proto && cp src/protoConfig/*.proto dist/protoConfig/ 2>/dev/null || true && cp src/proto/*.proto dist/proto/ 2>/dev/null || true",
-    "start": "node dist/server.js"
+    "start": "node -r tsconfig-paths/register dist/server.js",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
   },
-
-
-
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@grpc/grpc-js": "^1.13.3",
-    "@grpc/proto-loader": "^0.7.15",
+    "@grpc/grpc-js": "^1.13.2",
+    "@grpc/proto-loader": "^0.7.13",
     "@prisma/client": "^6.6.0",
     "amqplib": "^0.10.9",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "google-protobuf": "^3.21.4",
+    "inversify": "^7.10.1",
     "mongoose": "^8.13.2",
+    "reflect-metadata": "^0.2.2",
     "socket.io": "^4.8.1",
-    "stripe": "^18.0.0"
+    "stripe": "^18.0.0",
+    "tsconfig-paths": "^4.2.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.36.0",
     "@types/amqplib": "^0.10.7",
     "@types/express": "^5.0.1",
+    "@types/inversify": "^2.0.33",
     "@types/node": "^22.14.1",
+    "eslint": "^9.36.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.4.0",
+    "jiti": "^2.6.0",
     "nodemon": "^3.1.9",
+    "prettier": "^3.6.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "tsx": "^4.20.6",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.44.1"
   }
 }

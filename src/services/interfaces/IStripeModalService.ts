@@ -1,6 +1,6 @@
 import { AppointmentData, StripeSessionResponse } from '@/types/types';
 
-export interface IStripePaymentRepository {
+export interface IStripePaymentService {
     createCheckoutSession(data: {
         appointmentData: AppointmentData;
     }): Promise<StripeSessionResponse>;

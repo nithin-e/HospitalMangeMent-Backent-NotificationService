@@ -1,10 +1,21 @@
-import { StoreNotificationController, CancelDoctorController, FetchNotificationsController, StripModalController } from "../app";
+import { container } from '@/config/inversify.config';
+import { NotificationController } from '@/controllers/notification.controller';
+import { TYPES } from '@/types/inversify';
+
+export const notificationController = container.get<NotificationController>(
+    TYPES.NotificationController
+);
 
 export const notificationGrpcHandlers = {
-  CreateNotification: StoreNotificationController.storeNotificationData,
-  handleCanceldoctorApplication: CancelDoctorController.handleCancelDoctorApplication,
-  fecthAllNotifications: FetchNotificationsController.fetchNotifications.bind(FetchNotificationsController),
-  rescheduleAppointmentNotification: StoreNotificationController.rescheduleAppointmentNotification,
-  CreateCheckoutSession: StripModalController.createCheckoutSession,
-  createAdminBlockingNotification: StoreNotificationController.createAdminBlockNotification,
+    CreateNotification: notificationController.storeNotificationData,
+    handleCanceldoctorApplication:
+        notificationController.handleCancelDoctorApplication,
+    fecthAllNotifications: notificationController.fetchNotifications.bind(
+        notificationController
+    ),
+    rescheduleAppointmentNotification:
+        notificationController.rescheduleAppointmentNotification,
+    CreateCheckoutSession: notificationController.createCheckoutSession,
+    createAdminBlockingNotification:
+        notificationController.createAdminBlockNotification,
 };

@@ -1,20 +1,16 @@
-import "dotenv/config";
-import connectDB from "./config/mongo";
-import express from "express";
-import { startGrpcServer } from "./grpc/server";
+import 'dotenv/config';
+import connectDB from './config/mongo.config';
+import { Consumer } from './event/consumer';
+import { startGrpcServer } from './grpc/server';
+import { NotificationController } from './controllers/notification.controller';
 
-import { Consumer } from "./event/consumer";
-import { StoreNotificationController } from "./app";
+async function bootstrap() {
+    await connectDB();
 
-(async () => {
-  console.log("Connecting to MongoDB...");
-  await connectDB();
-  console.log("✅ MongoDB connected in Notification service");
+    const consumer = new Consumer(NotificationController);
+    await consumer.start();
 
-  // Start event consumer
-  const consumer = new Consumer(StoreNotificationController);
-  await consumer.start();
+    startGrpcServer();
+}
 
-  // Start gRPC server
-  startGrpcServer();
-})();
+bootstrap();
