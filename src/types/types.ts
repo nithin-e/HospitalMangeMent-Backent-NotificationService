@@ -1,4 +1,4 @@
-import { INotification } from '@/types/notificationTypes';
+import { INotification } from '../types/notificationTypes';
 
 export interface Timestamp {
     seconds: number;

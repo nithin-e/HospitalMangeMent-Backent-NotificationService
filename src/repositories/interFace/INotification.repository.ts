@@ -3,8 +3,8 @@ import {
     CancelDoctorApplicationOutput,
     INotificationsResponse,
 } from '@/types/types';
-import { IStoreNotificationRepository } from './IStoreNotificationRepository';
-import { IStripePaymentRepository } from './IStripeModalRepository';
+import { IStoreNotificationRepository } from './IStore-notification.repository';
+import { IStripePaymentRepository } from './IStripe-modal.repository';
 
 export interface IFetchNotificationRepository
     extends IStoreNotificationRepository,

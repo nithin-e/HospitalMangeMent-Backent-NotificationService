@@ -12,8 +12,8 @@ import {
     StripeSessionResponse,
     WebhookResponse,
 } from '@/types/types';
-import { IFetchNotificationRepository } from '../../repositories/interFace/INotificationRepository';
-import { IFetchNotificationService } from '../interfaces/INotificationService';
+import { IFetchNotificationRepository } from '../../repositories/interFace/INotification.repository';
+import { IFetchNotificationService } from '../interfaces/INotification.service';
 import { UserService } from '@/protoConfig/user.client';
 import { inject, injectable } from 'inversify';
 import { TYPES } from '@/types/inversify';

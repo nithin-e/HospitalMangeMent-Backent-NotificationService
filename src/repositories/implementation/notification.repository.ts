@@ -3,7 +3,7 @@ import {
     INotification,
     NotificationModel,
 } from '../../entities/notification.schema';
-import { IFetchNotificationRepository } from '../interFace/INotificationRepository';
+import { IFetchNotificationRepository } from '../interFace/INotification.repository';
 import { BaseRepository } from './base.repository';
 import {
     AdminBlockData,

@@ -16,7 +16,7 @@ import {
     GrpcCallback,
     IGrpcNotificationResponse,
 } from '@/types/notificationTypes';
-import { IFetchNotificationService } from '@/services/interfaces/INotificationService';
+import { IFetchNotificationService } from '@/services/interfaces/INotification.service';
 import { GrpcErrorHandler } from '@/utility/GrpcErrorHandler';
 import { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js';
 import { DoctorApplicationMapper } from '@/mappers/DoctorApplicationMapper';
@@ -24,11 +24,12 @@ import { error } from 'console';
 import { StoreNotificationMapper } from '@/mappers/StoreNotificationMapper';
 import { inject, injectable } from 'inversify';
 import { TYPES } from '@/types/inversify';
+import { Request, Response } from 'express';
 
 @injectable()
 export class NotificationController {
     constructor(
-        @inject(TYPES.NotifiactionService)
+        @inject(TYPES.NotificationService)
         private _fetchNotificationService: IFetchNotificationService
     ) {}
 
@@ -60,17 +61,13 @@ export class NotificationController {
     }
 
     handleCancelDoctorApplication = async (
-        call: GrpcCall,
-        callback: GrpcCallback
+        req: Request,
+        res: Response
     ): Promise<void> => {
         try {
-            if (!call.request.email || !Array.isArray(call.request.reasons)) {
-                throw error;
-            }
+            const { email, reasons } = req.body;
 
-            const { email, reasons } = call.request;
-
-            const dbResponse: ServiceCancelDoctorApplicationOutput =
+            const dbResponse =
                 await this._fetchNotificationService.handleCancelDoctorApplication(
                     {
                         email,
@@ -78,26 +75,26 @@ export class NotificationController {
                     }
                 );
 
-            const notificationProto: NotificationProtoResponse =
-                DoctorApplicationMapper.toGrpcResponse(email, dbResponse);
+            const notificationResponse = DoctorApplicationMapper.toGrpcResponse(
+                email,
+                dbResponse
+            );
 
-            callback(null, { notification: notificationProto });
-        } catch (error) {
-            console.error('Error in notification controller:', error);
-            throw error;
+            res.status(200).json({ notification: notificationResponse });
+        } catch (error: any) {
+            console.error('Error in handleCancelDoctorApplication:', error);
+            res.status(500).json({
+                message: error.message || 'Internal server error',
+            });
         }
     };
 
     storeNotificationData = async (
-        call: GrpcCalls,
-        callback: GrpcCallback<StoreNotificationResponse>
+        req: Request,
+        res: Response
     ): Promise<void> => {
         try {
-            const { email } = call.request;
-
-            if (!email) {
-                throw new Error('Email is required');
-            }
+            const { email } = req.body;
 
             const dbResponse =
                 await this._fetchNotificationService.storeNotificationData({
@@ -109,9 +106,12 @@ export class NotificationController {
             const protoNotification =
                 StoreNotificationMapper.toGrpcResponse(notification);
 
-            callback(null, { notification: protoNotification });
-        } catch (error) {
-            throw error;
+            res.status(200).json({ notification: protoNotification });
+        } catch (error: any) {
+            console.error('Error storing notification:', error);
+            res.status(500).json({
+                message: error.message || 'Internal server error',
+            });
         }
     };
 
@@ -137,19 +137,15 @@ export class NotificationController {
         }
     };
 
-    rescheduleAppointmentNotification = async (
-        call: GrpcCalls,
-        callback: GrpcCallback
-    ): Promise<void> => {
+    rescheduleAppointmentNotification = async (req: Request, res: Response) => {
         try {
-            const { email, time } = call.request;
+            const { email, time } = req.body;
 
             if (!email || !time) {
-                const error = {
-                    code: grpc.status.INVALID_ARGUMENT,
+                return res.status(400).json({
+                    success: false,
                     message: 'Email and time are required',
-                };
-                throw error;
+                });
             }
 
             await this._fetchNotificationService.rescheduleAppointmentNotification(
@@ -159,9 +155,15 @@ export class NotificationController {
                 }
             );
 
-            callback(null, { success: true });
+            return res.status(200).json({
+                success: true,
+                message: 'Reschedule notification sent successfully',
+            });
         } catch (error) {
-            throw error;
+            console.error(
+                'Error in rescheduleAppointmentNotificationRest:',
+                error
+            );
         }
     };
 

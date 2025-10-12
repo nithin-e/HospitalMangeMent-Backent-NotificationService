@@ -1,8 +1,8 @@
 import { NotificationController } from '@/controllers/notification.controller';
 import { NotificationRepository } from '@/repositories/implementation/notification.repository';
-import { IFetchNotificationRepository } from '@/repositories/interFace/INotificationRepository';
+import { IFetchNotificationRepository } from '@/repositories/interFace/INotification.repository';
 import { NotificationService } from '@/services/implementations/notification.service';
-import { IFetchNotificationService } from '@/services/interfaces/INotificationService';
+import { IFetchNotificationService } from '@/services/interfaces/INotification.service';
 import { TYPES } from '@/types/inversify';
 import { Container } from 'inversify';
 
@@ -13,7 +13,7 @@ container
     .to(NotificationRepository);
 
 container
-    .bind<IFetchNotificationService>(TYPES.NotifiactionService)
+    .bind<IFetchNotificationService>(TYPES.NotificationService)
     .to(NotificationService);
 
 container.bind(TYPES.NotificationController).to(NotificationController);

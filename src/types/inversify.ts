@@ -1,5 +1,5 @@
 export const TYPES = {
     NotificationController: Symbol.for('NotificationController'),
-    NotifiactionService: Symbol.for('NotifiactionService'),
+    NotificationService: Symbol.for('NotificationService'), // fixed
     NotificationRepository: Symbol.for('NotificationRepository'),
 };

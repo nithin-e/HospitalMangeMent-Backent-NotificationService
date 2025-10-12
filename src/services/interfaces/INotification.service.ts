@@ -3,8 +3,8 @@ import {
     ServiceCancelDoctorApplicationInput,
     ServiceCancelDoctorApplicationOutput,
 } from '@/types/types';
-import { IStoreNotificationService } from './IStoreNotificationService';
-import { IStripePaymentService } from './IStripeModalService';
+import { IStoreNotificationService } from './IStore-notification.service';
+import { IStripePaymentService } from './IStripe-modal.service';
 
 export interface IFetchNotificationService
     extends IStoreNotificationService,
