@@ -17,10 +17,10 @@ export const startGrpcServer = () => {
         notificationGrpcHandlers
     );
 
-    const port = process.env.GRPC_PORT || '7002';
+    const port = process.env.GRPC_PORT || '5001';
 
     grpcServer.bindAsync(
-        '0.0.0.0:50051',
+        `0.0.0.0:${port}`,
         grpc.ServerCredentials.createInsecure(),
         (err, bindPort) => {
             if (err) {

@@ -94,6 +94,8 @@ export class NotificationController {
         res: Response
     ): Promise<void> => {
         try {
+            console.log('hitting the request', req.body);
+
             const { email } = req.body;
 
             const dbResponse =
@@ -189,39 +191,35 @@ export class NotificationController {
     };
 
     createCheckoutSession = async (
-        call: GrpcCall,
-        callback: GrpcCallback
+        req: Request,
+        res: Response
     ): Promise<void> => {
         try {
-            const request: CreateCheckoutSessionRequest = call.request;
+            console.log('yes the req is hitting');
+            console.log('please check this', req.body);
 
-            if (!request.appointmentData) {
-                throw new Error('Appointment data is required');
-            }
+            const { appointmentData } = req.body;
 
             const response: StripeSessionResponse =
-                await this._fetchNotificationService.createCheckoutSession(
-                    request
-                );
+                await this._fetchNotificationService.createCheckoutSession({
+                    appointmentData,
+                });
 
-            const grpcResponse: CreateCheckoutSessionResponse = {
+            const restResponse: CreateCheckoutSessionResponse = {
                 success: response.success,
                 session_id: response.sessionId || undefined,
                 checkout_url: response.url || undefined,
                 error: response.error,
             };
 
-            console.log('controller aaahnu seen lle', grpcResponse);
-            callback(null, grpcResponse);
+            console.log('REST controller response:', restResponse);
+            res.status(200).json(restResponse);
         } catch (error) {
             console.error('Error in stripe payment controller:', error);
-            const grpcError = {
-                code: grpc.status.INTERNAL,
-                message:
-                    error instanceof Error ? error.message : 'Unknown error',
-            };
-
-            throw error;
+            res.status(500).json({
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error',
+            });
         }
     };
 }
