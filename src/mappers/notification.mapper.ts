@@ -1,7 +1,8 @@
 // mappers/notification.mapper.ts
 
-import { INotificationsResponse } from '@/types/types';
-import { IGrpcNotificationResponse } from '@/types/notificationTypes';
+import { IGrpcNotificationResponse } from "../types/notificationTypes";
+import { INotificationsResponse } from "../types/types";
+
 
 export class NotificationMapper {
     static toGrpcResponse(

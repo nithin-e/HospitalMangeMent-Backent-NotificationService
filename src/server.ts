@@ -2,7 +2,7 @@ import 'dotenv/config';
 import connectDB from './config/mongo.config';
 import { Consumer } from './event/consumer';
 import morgan from 'morgan';
-import { container } from '@/config/inversify.config';
+import bodyParser from 'body-parser';
 
 import { NotificationController } from './controllers/notification.controller';
 
@@ -10,6 +10,7 @@ import express from 'express';
 import notificationRoute from './route/notification.routes';
 import { TYPES } from './types/inversify';
 import { startGrpcServer } from './grpc/server';
+import { container } from './config/inversify.config';
 
 const app = express();
 

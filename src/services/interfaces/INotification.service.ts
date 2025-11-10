@@ -1,16 +1,18 @@
+import { IGrpcNotificationResponse } from '@/types/notificationTypes';
 import {
-    INotificationsResponse,
+
+    NotificationProtoResponse,
     ServiceCancelDoctorApplicationInput,
     ServiceCancelDoctorApplicationOutput,
-} from '@/types/types';
+} from '../../types/types';
 import { IStoreNotificationService } from './IStore-notification.service';
 import { IStripePaymentService } from './IStripe-modal.service';
 
-export interface IFetchNotificationService
+export interface INotificationService
     extends IStoreNotificationService,
         IStripePaymentService {
-    fetchNotifications(email: string): Promise<INotificationsResponse>;
+    fetchNotifications(email: string): Promise<IGrpcNotificationResponse>;
     handleCancelDoctorApplication(
         data: ServiceCancelDoctorApplicationInput
-    ): Promise<ServiceCancelDoctorApplicationOutput>;
+    ): Promise<NotificationProtoResponse>;
 }

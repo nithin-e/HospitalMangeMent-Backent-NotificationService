@@ -1,4 +1,4 @@
-import { AppointmentData, StripeSessionResponse } from '@/types/types';
+import { AppointmentData, StripeSessionResponse } from '../../types/types';
 
 export interface IStripePaymentRepository {
     createCheckoutSession(data: {

@@ -1,5 +1,5 @@
 import * as grpc from '@grpc/grpc-js';
-import { loadProto, createGrpcServer } from '../config/grpc.config';
+import { loadProto, createGrpcServer } from '../protoConfig/notification.client';
 import { notificationGrpcHandlers } from './handlers';
 
 export const startGrpcServer = () => {

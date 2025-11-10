@@ -1,43 +1,44 @@
+import { UserService } from '../../protoConfig/user.client';
+import { TYPES } from '../../types/inversify';
 import {
+    INotificationsResponse,
+    ServiceCancelDoctorApplicationInput,
+    NotificationData,
+    NotificationServiceResponse,
+    WebhookResponse,
+    RescheduleData,
+    RescheduleResponse,
     AdminBlockData,
     AdminBlockResponse,
     AppointmentData,
-    INotificationsResponse,
-    NotificationData,
-    NotificationServiceResponse,
-    RescheduleData,
-    RescheduleResponse,
-    ServiceCancelDoctorApplicationInput,
-    ServiceCancelDoctorApplicationOutput,
     StripeSessionResponse,
-    WebhookResponse,
-} from '@/types/types';
-import { IFetchNotificationRepository } from '../../repositories/interFace/INotification.repository';
-import { IFetchNotificationService } from '../interfaces/INotification.service';
-import { UserService } from '@/protoConfig/user.client';
+    TimestampProto,
+    NotificationProtoResponse,
+} from '../../types/types';
 import { inject, injectable } from 'inversify';
-import { TYPES } from '@/types/inversify';
+import { INotificationService } from '../interfaces/INotification.service';
+import { INotificationRepository } from '@/repositories/interFace/INotification.repository';
+import { IGrpcNotificationResponse } from '@/types/notificationTypes';
+import { NotificationMapper } from '../../mappers/notification.mapper';
+import { StoreNotificationMapper } from '../../mappers/StoreNotificationMapper';
+import { NOTIFICATION_MESSAGES } from '../../constants/messages.constant';
+
 
 @injectable()
-export class NotificationService implements IFetchNotificationService {
+export class NotificationService implements INotificationService {
     constructor(
         @inject(TYPES.NotificationRepository)
-        private _fetchNotificationRepository: IFetchNotificationRepository
+        private _fetchNotificationRepository: INotificationRepository
     ) {}
 
-    /**
-     * Retrieves all notifications for a given user.
-     *
-     * @param email - User's email
-     * @returns List of notifications
-     */
-
-    async fetchNotifications(email: string): Promise<INotificationsResponse> {
+    async fetchNotifications(
+        email: string
+    ): Promise<IGrpcNotificationResponse> {
         try {
-            console.log('Service fetching notifications for:', email);
-
             if (!email) {
-                throw new Error('Email is required');
+                throw new Error(
+                    NOTIFICATION_MESSAGES.VALIDATION.EMAIL_REQUIRED
+                );
             }
 
             const response: INotificationsResponse =
@@ -45,20 +46,23 @@ export class NotificationService implements IFetchNotificationService {
                     email
                 );
 
-            return response;
+            const grpcResponse: IGrpcNotificationResponse =
+                NotificationMapper.toGrpcResponse(response);
+
+            return grpcResponse;
         } catch (error) {
-            console.error('Error in notification service:', error);
+            console.error(NOTIFICATION_MESSAGES.ERROR.FETCH_FAILED, error);
             throw error;
         }
     }
 
     handleCancelDoctorApplication = async (
         data: ServiceCancelDoctorApplicationInput
-    ): Promise<ServiceCancelDoctorApplicationOutput> => {
+    ): Promise<NotificationProtoResponse> => {
         try {
             if (!data.email || !Array.isArray(data.reasons)) {
                 throw new Error(
-                    'Invalid input: email and reasons array are required'
+                    NOTIFICATION_MESSAGES.VALIDATION.EMAIL_AND_REASONS_REQUIRED
                 );
             }
 
@@ -67,20 +71,24 @@ export class NotificationService implements IFetchNotificationService {
                     data
                 );
 
-            return {
-                _id: response._id,
-                email: response.email,
+            const protoResponse: NotificationProtoResponse = {
+                user_id: data.email,
+                title: 'Application Rejected',
                 message: response.message,
-                type: response.type,
-                isRead: response.isRead,
-                createdAt: response.createdAt,
-                paymentStatus: response.paymentStatus,
-                paymentAmount: response.paymentAmount,
-                paymentLink: response.paymentLink,
-                updatedAt: response.updatedAt,
+                type: this.mapNotificationType(response.type),
+                is_read: response.isRead,
+                created_at: this.dateToTimestamp(response.createdAt),
+                payment_amount: response.paymentAmount || 0,
+                payment_link: response.paymentLink || '',
+                payment_status: this.mapPaymentStatus(response.paymentStatus),
             };
+
+            return protoResponse;
         } catch (error) {
-            console.error('Error in notification service:', error);
+            console.error(
+                NOTIFICATION_MESSAGES.ERROR.SERVICE_LAYER_ERROR,
+                error
+            );
             throw error;
         }
     };
@@ -104,17 +112,14 @@ export class NotificationService implements IFetchNotificationService {
                         ) => {
                             if (err) {
                                 console.error(
-                                    'Error updating user status:',
+                                    NOTIFICATION_MESSAGES.ERROR
+                                        .UPDATE_USER_STATUS_FAILED,
                                     err
                                 );
                                 reject(err);
                                 return;
                             }
 
-                            console.log(
-                                'Successfully updated doctor:',
-                                grpcResponse
-                            );
                             resolve(grpcResponse.success);
                         }
                     );
@@ -125,18 +130,34 @@ export class NotificationService implements IFetchNotificationService {
                 const updateResult = await updateUserStatus();
 
                 if (!updateResult) {
-                    throw new Error('Failed to update doctor status');
+                    throw new Error(
+                        NOTIFICATION_MESSAGES.DOCTOR_APPLICATION.STATUS_UPDATE_FAILED
+                    );
                 }
-                return response;
+
+                const protoNotification =
+                    StoreNotificationMapper.toGrpcResponse(
+                        response.notification
+                    );
+
+                return {
+                    notification: protoNotification,
+                };
             } catch (updateError) {
-                console.error('Error updating doctor status:', updateError);
+                console.error(
+                    NOTIFICATION_MESSAGES.ERROR.UPDATE_USER_STATUS_FAILED,
+                    updateError
+                );
 
                 throw new Error(
-                    'Notification created but failed to update user status'
+                    NOTIFICATION_MESSAGES.DOCTOR_APPLICATION.NOTIFICATION_CREATED_STATUS_FAILED
                 );
             }
         } catch (error) {
-            console.error('Error in notification use case:', error);
+            console.error(
+                NOTIFICATION_MESSAGES.ERROR.SERVICE_LAYER_ERROR,
+                error
+            );
             throw error;
         }
     };
@@ -149,7 +170,7 @@ export class NotificationService implements IFetchNotificationService {
             if (!email) {
                 return {
                     success: false,
-                    message: 'Email not found in session metadata',
+                    message: NOTIFICATION_MESSAGES.WEBHOOK.EMAIL_NOT_FOUND,
                 };
             }
 
@@ -162,14 +183,19 @@ export class NotificationService implements IFetchNotificationService {
 
             return {
                 success: true,
-                message: 'Event acknowledged but no action taken',
+                message: NOTIFICATION_MESSAGES.WEBHOOK.ACKNOWLEDGED,
             };
         } catch (error) {
-            console.error('Error processing webhook event:', error);
+            console.error(
+                NOTIFICATION_MESSAGES.ERROR.WEBHOOK_PROCESSING_FAILED,
+                error
+            );
             return {
                 success: false,
-                message: `Error processing webhook: ${
-                    error instanceof Error ? error.message : 'Unknown error'
+                message: `${NOTIFICATION_MESSAGES.ERROR.WEBHOOK_PROCESSING_FAILED}: ${
+                    error instanceof Error
+                        ? error.message
+                        : NOTIFICATION_MESSAGES.ERROR.UNKNOWN_ERROR
                 }`,
             };
         }
@@ -183,7 +209,10 @@ export class NotificationService implements IFetchNotificationService {
                 data
             );
         } catch (error) {
-            console.error('Error in notification use case:', error);
+            console.error(
+                NOTIFICATION_MESSAGES.ERROR.SERVICE_LAYER_ERROR,
+                error
+            );
             throw error;
         }
     };
@@ -196,7 +225,10 @@ export class NotificationService implements IFetchNotificationService {
                 data
             );
         } catch (error) {
-            console.error('Error in notification use case:', error);
+            console.error(
+                NOTIFICATION_MESSAGES.ERROR.SERVICE_LAYER_ERROR,
+                error
+            );
             throw error;
         }
     };
@@ -209,13 +241,55 @@ export class NotificationService implements IFetchNotificationService {
                 appointmentData
             );
         } catch (error) {
-            console.log('Error in stripe payment service:', error);
+            console.error(
+                NOTIFICATION_MESSAGES.ERROR.STRIPE_PAYMENT_FAILED,
+                error
+            );
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Unknown error',
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : NOTIFICATION_MESSAGES.ERROR.UNKNOWN_ERROR,
                 sessionId: null,
                 url: null,
             };
         }
+    }
+
+    private mapNotificationType(type: string): number {
+        switch (type) {
+            case 'INFO':
+                return 1;
+            case 'APPROVAL':
+                return 2;
+            case 'PAYMENT':
+                return 3;
+            case 'ALERT':
+                return 4;
+            default:
+                return 0;
+        }
+    }
+
+    private mapPaymentStatus(status: string): number {
+        switch (status) {
+            case 'PENDING':
+                return 1;
+            case 'COMPLETED':
+                return 2;
+            case 'FAILED':
+                return 3;
+            default:
+                return 0;
+        }
+    }
+
+    private dateToTimestamp(date: Date): TimestampProto {
+        const timestamp = new Date(date).getTime();
+        const seconds = Math.floor(timestamp / 1000);
+        const nanos = (timestamp % 1000) * 1000000;
+
+        return { seconds, nanos };
     }
 }

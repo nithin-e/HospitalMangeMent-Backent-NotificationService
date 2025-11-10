@@ -5,7 +5,7 @@ import {
     RescheduleRepositoryResponse,
     AdminBlockRequest,
     AdminBlockRepositoryResponse,
-} from '@/types/types';
+} from '../../types/types';
 
 export interface IStoreNotificationRepository {
     storeNotificationData(

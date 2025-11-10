@@ -1,42 +1,41 @@
-import { ObjectId, Model, FilterQuery } from 'mongoose';
+import {  Model, FilterQuery, Types } from 'mongoose';
+import Stripe from 'stripe';
+import https from 'https';
 import {
     INotification,
     NotificationModel,
 } from '../../entities/notification.schema';
-import { IFetchNotificationRepository } from '../interFace/INotification.repository';
 import { BaseRepository } from './base.repository';
+
+import { injectable, unmanaged } from 'inversify';
 import {
-    AdminBlockData,
-    AdminBlockResponse,
-    AppointmentData,
+    INotificationsResponse,
     CancelDoctorApplicationInput,
     CancelDoctorApplicationOutput,
-    INotificationResponseData,
-    INotificationsResponse,
     NotificationData,
     NotificationRepositoryResponse,
     RescheduleData,
     RescheduleResponse,
+    AdminBlockData,
+    AdminBlockResponse,
+    AppointmentData,
     StripeSessionResponse,
-} from '@/types/types';
-import Stripe from 'stripe';
-import https from 'https';
-import { convertTo12HourFormat } from '@/utility/enumsConverter';
-import { injectable, unmanaged } from 'inversify';
+} from 'src/types/types';
+import { convertTo12HourFormat } from '../../utility/enumsConverter';
+import { INotificationRepository } from '../interFace/INotification.repository';
+import { NOTIFICATION_MESSAGES } from '../../constants/messages.constant';
 
 @injectable()
 export class NotificationRepository
     extends BaseRepository<INotification>
-    implements IFetchNotificationRepository
+    implements INotificationRepository
 {
     private stripe: Stripe;
     constructor(@unmanaged() model?: Model<INotification>) {
         super(model || NotificationModel);
 
         if (!process.env.STRIPE_SECRET_KEY) {
-            throw new Error(
-                'STRIPE_SECRET_KEY is not defined in environment variables'
-            );
+            throw new Error(NOTIFICATION_MESSAGES.STRIPE.KEY_MISSING);
         }
 
         const httpsAgent = new https.Agent({
@@ -54,15 +53,9 @@ export class NotificationRepository
         });
     }
 
-    /**
-     * Fetch all notifications for a specific user by email.
-     *
-     * @param email - User's email
-     * @returns Notifications response object
-     */
     async fetchNotifications(email: string): Promise<INotificationsResponse> {
         try {
-            const notifications = await this.findOne({ email });
+            const notifications = await this.find({ email });
 
             if (!notifications) {
                 return {
@@ -71,25 +64,33 @@ export class NotificationRepository
                 };
             }
 
-            const notificationData: INotificationResponseData = {
-                id: (notifications._id as ObjectId).toString(),
-                email: notifications.email,
-                message: notifications.message,
-                type: notifications.type,
-                paymentAmount: notifications.paymentAmount,
-                paymentLink: notifications.paymentLink,
-                paymentStatus: notifications.paymentStatus,
-                isRead: notifications.isRead,
-                createdAt: notifications.createdAt,
-                updatedAt: notifications.updatedAt,
-            };
+        const notificationData = notifications.map((n) => ({
+          id: (n._id as Types.ObjectId).toString(),
+            email: n.email,
+            message: n.message,
+            type: n.type,
+            paymentAmount: n.paymentAmount,
+            paymentLink: n.paymentLink,
+            paymentStatus: n.paymentStatus,
+            isRead: n.isRead,
+            createdAt: n.createdAt,
+            updatedAt: n.updatedAt,
+        }));
 
-            return {
+            console.log(
+                '..........check this notications of the use inside the repository..........',
+                notificationData
+            );
+
+          return {
                 success: true,
-                notification: [notificationData],
+                notification: notificationData,
             };
         } catch (error) {
-            console.error('Error in repository:', error);
+            console.error(
+                NOTIFICATION_MESSAGES.ERROR.REPOSITORY_LAYER_ERROR,
+                error
+            );
             throw error;
         }
     }
@@ -100,10 +101,8 @@ export class NotificationRepository
         try {
             const rejectionMessage =
                 data.reasons.length > 0
-                    ? `Your doctor application has been rejected for the following reasons: ${data.reasons.join(
-                          ', '
-                      )}`
-                    : 'Your doctor application has been rejected.';
+                    ? `${NOTIFICATION_MESSAGES.CREATE.DOCTOR_REJECTION_WITH_REASONS}: ${data.reasons.join(', ')}`
+                    : NOTIFICATION_MESSAGES.CREATE.DOCTOR_REJECTION;
 
             const newNotification = {
                 email: data.email,
@@ -119,10 +118,8 @@ export class NotificationRepository
 
             return savedNotification.toObject() as CancelDoctorApplicationOutput;
         } catch (error) {
-            console.error(
-                'Error in repository when creating notification:',
-                error
-            );
+            console.error(NOTIFICATION_MESSAGES.ERROR.CREATE_FAILED, error);
+
             throw error;
         }
     };
@@ -158,7 +155,7 @@ export class NotificationRepository
 
             return { notification };
         } catch (error) {
-            console.error('Error in storing notification data:', error);
+            console.error(NOTIFICATION_MESSAGES.ERROR.STORE_FAILED, error);
             throw error;
         }
     };
@@ -171,7 +168,7 @@ export class NotificationRepository
         try {
             if (!process.env.FRONTEND_URL) {
                 throw new Error(
-                    'FRONTEND_URL is not defined in environment variables'
+                    NOTIFICATION_MESSAGES.STRIPE.FRONTEND_URL_MISSING
                 );
             }
 
@@ -213,7 +210,7 @@ export class NotificationRepository
             );
 
             // Construct the redirect URL
-            const redirectUrl = `http://localhost:8080/payment-success?email=${encodeURIComponent(
+            const redirectUrl = `https://www.healnova.fun/payment-success?email=${encodeURIComponent(
                 email
             )}&transaction=${transactionId}`;
 
@@ -243,7 +240,10 @@ export class NotificationRepository
 
             return paymentLink;
         } catch (error) {
-            console.error('Error creating Stripe payment link:', error);
+            console.error(
+                NOTIFICATION_MESSAGES.ERROR.PAYMENT_LINK_FAILED,
+                error
+            );
             throw error;
         }
     };
@@ -272,7 +272,10 @@ export class NotificationRepository
             await NotificationModel.deleteMany({ email });
             return result.modifiedCount > 0;
         } catch (error) {
-            console.error('Error updating payment status:', error);
+            console.error(
+                NOTIFICATION_MESSAGES.ERROR.PAYMENT_STATUS_FAILED,
+                error
+            );
             throw error;
         }
     }
@@ -297,10 +300,10 @@ export class NotificationRepository
             return {
                 success: true,
                 notification: savedNotification,
-                message: 'Reschedule notification created successfully',
+                message: NOTIFICATION_MESSAGES.CREATE.RESCHEDULE_SUCCESS,
             };
         } catch (error) {
-            console.error('Error in storing notification data:', error);
+            console.error(NOTIFICATION_MESSAGES.ERROR.STORE_FAILED, error);
             throw error;
         }
     };
@@ -324,14 +327,14 @@ export class NotificationRepository
                 success: true,
             };
         } catch (error) {
-            console.error('Error in storing notification data:', error);
+            console.error(NOTIFICATION_MESSAGES.ERROR.STORE_FAILED, error);
             return {
                 success: false,
                 error:
                     error instanceof Error
                         ? error.message
-                        : 'Unknown error occurred',
-                message: 'Failed to create notification',
+                        : NOTIFICATION_MESSAGES.ERROR.UNKNOWN_ERROR,
+                message: NOTIFICATION_MESSAGES.ADMIN_BLOCK.FAILED,
             };
         }
     };
@@ -340,11 +343,6 @@ export class NotificationRepository
         appointmentData: AppointmentData;
     }): Promise<StripeSessionResponse> {
         try {
-            console.log(
-                'Creating Stripe checkout session with appointment data:',
-                appointmentData
-            );
-
             const { appointmentData: appointment } = appointmentData;
             const formattedTime = convertTo12HourFormat(appointment.time);
 
@@ -389,10 +387,13 @@ export class NotificationRepository
                 url: session.url,
             };
         } catch (error) {
-            console.log('Stripe error:', error);
+            console.error(NOTIFICATION_MESSAGES.STRIPE.ERROR, error);
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Unknown error',
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : NOTIFICATION_MESSAGES.ERROR.UNKNOWN_ERROR,
                 sessionId: null,
                 url: null,
             };

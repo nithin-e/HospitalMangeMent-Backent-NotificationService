@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "description": "Notification microservice using gRPC and Express",
   "main": "dist/server.js",
-  "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc && npm run copy-protos",
-    "copy-protos": "mkdir -p dist/protoConfig && mkdir -p dist/proto && cp src/protoConfig/*.proto dist/protoConfig/ 2>/dev/null || true && cp src/proto/*.proto dist/proto/ 2>/dev/null || true",
-    "start": "node -r tsconfig-paths/register dist/server.js",
-    "lint": "eslint",
-    "lint:fix": "eslint --fix"
-  },
+"scripts": {
+  "dev": "tsx watch src/server.ts",
+    "build": "tsc && cp -r src/proto dist/proto",
+
+  "start": "node -r tsconfig-paths/register dist/server.js"
+},
+
+
+
   "keywords": [],
   "author": "",
   "license": "ISC",

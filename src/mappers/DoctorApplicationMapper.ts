@@ -1,8 +1,5 @@
-import {
-    ServiceCancelDoctorApplicationOutput,
-    NotificationProtoResponse,
-    TimestampProto,
-} from '@/types/types';
+import { ServiceCancelDoctorApplicationOutput, NotificationProtoResponse, TimestampProto } from "../types/types";
+
 
 export class DoctorApplicationMapper {
     static toGrpcResponse(

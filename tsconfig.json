@@ -3,7 +3,6 @@
     "target": "es2020",
     "module": "commonjs",
     "outDir": "./dist",
-    "rootDir": "./src",
     "baseUrl": ".",
     "esModuleInterop": true,
     "experimentalDecorators": true,
@@ -12,9 +11,7 @@
     "strict": true,
     "skipLibCheck": true,
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     }
   },
   "include": [

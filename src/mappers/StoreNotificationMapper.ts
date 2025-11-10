@@ -1,8 +1,6 @@
-import { ProtoNotification, TimestampProto } from '@/types/types';
-import {
-    convertStatusToProtoEnum,
-    convertTypeToProtoEnum,
-} from '@/utility/enumsConverter';
+import { ProtoNotification, TimestampProto } from "../types/types";
+import { convertTypeToProtoEnum, convertStatusToProtoEnum } from "../utility/enumsConverter";
+
 
 export class StoreNotificationMapper {
     static toGrpcResponse(notification: any): ProtoNotification {

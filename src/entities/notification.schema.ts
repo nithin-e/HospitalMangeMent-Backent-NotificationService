@@ -1,4 +1,3 @@
-// notification.model.ts
 import mongoose, { Schema, Document, ObjectId } from 'mongoose';
 
 export interface INotification extends Document {
@@ -15,6 +14,7 @@ export interface INotification extends Document {
 }
 
 const NotificationSchema: Schema = new Schema({
+    
     email: {
         type: String,
         required: true,

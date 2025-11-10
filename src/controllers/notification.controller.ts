@@ -1,36 +1,27 @@
-import * as grpc from '@grpc/grpc-js';
-import {
-    CreateCheckoutSessionRequest,
-    CreateCheckoutSessionResponse,
-    GrpcCalls,
-    IEventData,
-    INotificationsResponse,
-    NotificationProtoResponse,
-    ServiceCancelDoctorApplicationOutput,
-    StoreNotificationResponse,
-    StripeSessionResponse,
-} from '@/types/types';
-import { NotificationMapper } from '../mappers/notification.mapper';
-import {
-    GrpcCall,
-    GrpcCallback,
-    IGrpcNotificationResponse,
-} from '@/types/notificationTypes';
-import { IFetchNotificationService } from '@/services/interfaces/INotification.service';
-import { GrpcErrorHandler } from '@/utility/GrpcErrorHandler';
 import { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js';
-import { DoctorApplicationMapper } from '@/mappers/DoctorApplicationMapper';
-import { error } from 'console';
-import { StoreNotificationMapper } from '@/mappers/StoreNotificationMapper';
 import { inject, injectable } from 'inversify';
-import { TYPES } from '@/types/inversify';
 import { Request, Response } from 'express';
+import { TYPES } from '../types/inversify';
+import {
+    IGrpcNotificationResponse,
+    GrpcCallback,
+} from '../types/notificationTypes';
+import {
+    IEventData,
+    GrpcCalls,
+    StripeSessionResponse,
+    CreateCheckoutSessionResponse,
+    HttpStatusCode,
+} from '../types/types';
+import { GrpcErrorHandler } from '../utility/GrpcErrorHandler';
+import { INotificationService } from '@/services/interfaces/INotification.service';
+import { NOTIFICATION_MESSAGES } from '../constants/messages.constant';
 
 @injectable()
 export class NotificationController {
     constructor(
         @inject(TYPES.NotificationService)
-        private _fetchNotificationService: IFetchNotificationService
+        private _fetchNotificationService: INotificationService
     ) {}
 
     async fetchNotifications(
@@ -41,50 +32,51 @@ export class NotificationController {
             const { email } = call.request;
 
             if (!email) {
-                throw new Error('Email is required');
+                throw new Error(
+                    NOTIFICATION_MESSAGES.VALIDATION.EMAIL_REQUIRED
+                );
             }
 
-            const response: INotificationsResponse =
+            const notificationResponse: IGrpcNotificationResponse =
                 await this._fetchNotificationService.fetchNotifications(email);
-
-            const notificationResponse =
-                NotificationMapper.toGrpcResponse(response);
 
             callback(null, notificationResponse);
             return notificationResponse;
         } catch (error) {
-            console.log('Error in notification controller:', error);
-            console.error('Error in notification controller:', error);
+            console.error(NOTIFICATION_MESSAGES.ERROR.CONTROLLER_ERROR, error);
             callback(GrpcErrorHandler.internal(error), null);
             throw error;
         }
     }
-
     handleCancelDoctorApplication = async (
         req: Request,
         res: Response
     ): Promise<void> => {
         try {
-            const { email, reasons } = req.body;
+            const { email, rejectionReasonTexts } = req.body;
 
-            const dbResponse =
+            const notificationResponse =
                 await this._fetchNotificationService.handleCancelDoctorApplication(
                     {
                         email,
-                        reasons,
+                        reasons: rejectionReasonTexts,
                     }
                 );
 
-            const notificationResponse = DoctorApplicationMapper.toGrpcResponse(
-                email,
-                dbResponse
+            res.status(HttpStatusCode.OK).json({
+                notification: notificationResponse,
+            });
+        } catch (error) {
+            console.error(
+                NOTIFICATION_MESSAGES.DOCTOR_APPLICATION.CANCEL_FAILED,
+                error
             );
-
-            res.status(200).json({ notification: notificationResponse });
-        } catch (error: any) {
-            console.error('Error in handleCancelDoctorApplication:', error);
-            res.status(500).json({
-                message: error.message || 'Internal server error',
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : NOTIFICATION_MESSAGES.ERROR.INTERNAL_SERVER_ERROR,
             });
         }
     };
@@ -94,8 +86,6 @@ export class NotificationController {
         res: Response
     ): Promise<void> => {
         try {
-            console.log('hitting the request', req.body);
-
             const { email } = req.body;
 
             const dbResponse =
@@ -105,14 +95,17 @@ export class NotificationController {
 
             const { notification } = dbResponse;
 
-            const protoNotification =
-                StoreNotificationMapper.toGrpcResponse(notification);
-
-            res.status(200).json({ notification: protoNotification });
-        } catch (error: any) {
-            console.error('Error storing notification:', error);
-            res.status(500).json({
-                message: error.message || 'Internal server error',
+            res.status(HttpStatusCode.OK).json({
+                notification: notification,
+            });
+        } catch (error) {
+            console.error(NOTIFICATION_MESSAGES.ERROR.STORE_FAILED, error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : NOTIFICATION_MESSAGES.ERROR.INTERNAL_SERVER_ERROR,
             });
         }
     };
@@ -129,12 +122,14 @@ export class NotificationController {
 
             if (result) {
                 console.log(
-                    'Notification deleted succesfully for email:',
-                    eventType.email
+                    `${NOTIFICATION_MESSAGES.WEBHOOK.NOTIFICATION_DELETED}: ${email}`
                 );
             }
         } catch (error) {
-            console.error('error in handlestripewebhook:', error);
+            console.error(
+                NOTIFICATION_MESSAGES.ERROR.WEBHOOK_PROCESSING_FAILED,
+                error
+            );
             throw error;
         }
     };
@@ -144,9 +139,11 @@ export class NotificationController {
             const { email, time } = req.body;
 
             if (!email || !time) {
-                return res.status(400).json({
+                return res.status(HttpStatusCode.BAD_REQUEST).json({
                     success: false,
-                    message: 'Email and time are required',
+                    message:
+                        NOTIFICATION_MESSAGES.VALIDATION
+                            .EMAIL_AND_TIME_REQUIRED,
                 });
             }
 
@@ -157,15 +154,12 @@ export class NotificationController {
                 }
             );
 
-            return res.status(200).json({
+            return res.status(HttpStatusCode.OK).json({
                 success: true,
-                message: 'Reschedule notification sent successfully',
+                message: NOTIFICATION_MESSAGES.RESCHEDULE.SUCCESS,
             });
         } catch (error) {
-            console.error(
-                'Error in rescheduleAppointmentNotificationRest:',
-                error
-            );
+            console.error(NOTIFICATION_MESSAGES.ERROR.RESCHEDULE_FAILED, error);
         }
     };
 
@@ -195,9 +189,6 @@ export class NotificationController {
         res: Response
     ): Promise<void> => {
         try {
-            console.log('yes the req is hitting');
-            console.log('please check this', req.body);
-
             const { appointmentData } = req.body;
 
             const response: StripeSessionResponse =
@@ -212,11 +203,13 @@ export class NotificationController {
                 error: response.error,
             };
 
-            console.log('REST controller response:', restResponse);
-            res.status(200).json(restResponse);
+            res.status(HttpStatusCode.OK).json(restResponse);
         } catch (error) {
-            console.error('Error in stripe payment controller:', error);
-            res.status(500).json({
+            console.error(
+                NOTIFICATION_MESSAGES.ERROR.STRIPE_PAYMENT_FAILED,
+                error
+            );
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error',
             });

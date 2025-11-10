@@ -1,7 +1,7 @@
 import express from 'express';
 import { NotificationController } from '../controllers/notification.controller';
 import { TYPES } from '../types/inversify';
-import { container } from '@/config/inversify.config'; // Import the configured container
+import { container } from '../config/inversify.config';
 
 const notificationRoute = express.Router();
 

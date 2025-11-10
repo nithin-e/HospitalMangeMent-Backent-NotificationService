@@ -4,7 +4,7 @@ import {
     WebhookResponse,
     RescheduleRepositoryResponse,
     AdminBlockRepositoryResponse,
-} from '@/types/types';
+} from '../../types/types';
 
 export interface IStoreNotificationService {
     storeNotificationData(

@@ -1,12 +1,12 @@
 import {
+    INotificationsResponse,
     CancelDoctorApplicationInput,
     CancelDoctorApplicationOutput,
-    INotificationsResponse,
-} from '@/types/types';
+} from '../../types/types';
 import { IStoreNotificationRepository } from './IStore-notification.repository';
 import { IStripePaymentRepository } from './IStripe-modal.repository';
 
-export interface IFetchNotificationRepository
+export interface INotificationRepository
     extends IStoreNotificationRepository,
         IStripePaymentRepository {
     fetchNotifications(email: string): Promise<INotificationsResponse>;
