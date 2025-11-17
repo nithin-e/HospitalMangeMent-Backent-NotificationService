@@ -2,8 +2,8 @@ import {
     NotificationRequest,
     NotificationServiceResponse,
     WebhookResponse,
-    RescheduleRepositoryResponse,
     AdminBlockRepositoryResponse,
+    RescheduleResponse,
 } from '../../types/types';
 
 export interface IStoreNotificationService {
@@ -17,7 +17,7 @@ export interface IStoreNotificationService {
     rescheduleAppointmentNotification(data: {
         email: string;
         time: string;
-    }): Promise<RescheduleRepositoryResponse>;
+    }): Promise<RescheduleResponse>;
     createAdminBlockNotification(data: {
         email: string;
         reason: string;

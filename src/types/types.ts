@@ -87,8 +87,13 @@ export interface StoreNotificationResponse {
     notification: ProtoNotification;
 }
 
+export interface AdminBlockRequest {
+    email: string;
+    reason: string;
+}
+
 export interface GrpcCalls {
-    request: any;
+    request: AdminBlockRequest;
 }
 
 export interface AppointmentData {
@@ -170,12 +175,6 @@ export interface NotificationRequest {
 // Response types
 export interface NotificationServiceResponse {
     notification: any;
-}
-
-export interface RescheduleRepositoryResponse {
-    success: boolean;
-    notification?: any;
-    message?: string;
 }
 
 export interface AdminBlockRepositoryResponse {
@@ -267,12 +266,6 @@ export interface NotificationRepositoryResponse {
     notification: any;
 }
 
-export interface RescheduleRepositoryResponse {
-    success: boolean;
-    notification?: any;
-    message?: string;
-}
-
 export interface AppointmentData {
     name: string;
     email: string;
@@ -293,7 +286,3 @@ export interface StripeSessionResponse {
     url: string | null;
     error?: string;
 }
-
-// export interface NotificationResponse {
-//   notification: any;
-// }

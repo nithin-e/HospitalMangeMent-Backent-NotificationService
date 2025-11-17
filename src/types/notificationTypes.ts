@@ -74,13 +74,7 @@ export interface NotificationResponse {
     updatedAt?: Date;
 }
 
-export interface GrpcCall {
-    request: any;
-    metadata: grpc.Metadata;
-    getPeer(): string;
-    sendMetadata(responseMetadata: grpc.Metadata): void;
-    // Add other gRPC call methods you need
-}
+
 
 export interface GrpcCallback<T = unknown> {
     (error: grpc.ServiceError | null, response: T): void;

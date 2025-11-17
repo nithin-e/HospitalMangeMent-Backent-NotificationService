@@ -13,7 +13,7 @@ const packageDef = protoLoader.loadSync(protoPath, {
     oneofs: true,
 });
 
-const grpcObject = grpc.loadPackageDefinition(packageDef) as unknown as any;
+const grpcObject = grpc.loadPackageDefinition(packageDef) as unknown as any
 
 const Domain = process.env.USER_SERVICE_GRPC_URL;
 console.log('check', Domain);

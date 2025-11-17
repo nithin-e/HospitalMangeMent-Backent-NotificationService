@@ -3,7 +3,6 @@ import {
 
     NotificationProtoResponse,
     ServiceCancelDoctorApplicationInput,
-    ServiceCancelDoctorApplicationOutput,
 } from '../../types/types';
 import { IStoreNotificationService } from './IStore-notification.service';
 import { IStripePaymentService } from './IStripe-modal.service';

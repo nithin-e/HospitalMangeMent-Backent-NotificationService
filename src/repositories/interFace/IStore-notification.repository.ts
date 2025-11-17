@@ -2,9 +2,10 @@ import {
     NotificationRequest,
     NotificationRepositoryResponse,
     RescheduleRequest,
-    RescheduleRepositoryResponse,
+    // RescheduleRepositoryResponse,
     AdminBlockRequest,
     AdminBlockRepositoryResponse,
+    RescheduleResponse,
 } from '../../types/types';
 
 export interface IStoreNotificationRepository {
@@ -18,7 +19,7 @@ export interface IStoreNotificationRepository {
     ): Promise<boolean>;
     rescheduleAppointmentNotification(
         data: RescheduleRequest
-    ): Promise<RescheduleRepositoryResponse>;
+    ): Promise<RescheduleResponse>;
     createAdminBlockNotification(
         data: AdminBlockRequest
     ): Promise<AdminBlockRepositoryResponse>;

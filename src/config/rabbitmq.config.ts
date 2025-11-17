@@ -2,8 +2,6 @@ import amqp from 'amqplib';
 
 function getRabbitUrl() {
     if (process.env.RABBIT_URL) {
-        console.log('first one', process.env.RABBIT_URL);
-
         return process.env.RABBIT_URL;
     }
 
@@ -20,7 +18,7 @@ const rabbitUrl = getRabbitUrl();
 
 const MAX_RETRIES = 10;
 const RETRY_DELAY = 5000;
-async function sleep(ms: any) {
+async function sleep(ms:number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 

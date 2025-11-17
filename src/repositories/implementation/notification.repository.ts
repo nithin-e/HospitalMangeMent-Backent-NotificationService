@@ -77,10 +77,7 @@ export class NotificationRepository
             updatedAt: n.updatedAt,
         }));
 
-            console.log(
-                '..........check this notications of the use inside the repository..........',
-                notificationData
-            );
+          
 
           return {
                 success: true,
@@ -210,7 +207,7 @@ export class NotificationRepository
             );
 
             // Construct the redirect URL
-            const redirectUrl = `https://www.healnova.fun/payment-success?email=${encodeURIComponent(
+            const redirectUrl = `https://healnova.fun/payment-success?email=${encodeURIComponent(
                 email
             )}&transaction=${transactionId}`;
 

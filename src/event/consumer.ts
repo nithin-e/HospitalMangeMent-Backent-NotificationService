@@ -1,9 +1,10 @@
+import { Channel, Connection, ConsumeMessage, ChannelModel } from 'amqplib';
 import { createRabbit } from '../config/rabbitmq.config';
 import { NotificationController } from '../controllers/notification.controller';
 
 export class Consumer {
-    ch: any;
-    conn: any;
+    ch: Channel | null = null;
+    conn: Connection | ChannelModel | null = null;
     private isRunning: boolean = false;
 
     constructor(private storeNotificationController: NotificationController) {}
@@ -22,7 +23,6 @@ export class Consumer {
 
             console.log('🚀 Realtime service started with RabbitMQ consumers');
 
-            // Limit to 1 message at a time
             await ch.prefetch(1);
 
             const appointmentQueue = 'appointment.rescheduled';
@@ -36,7 +36,7 @@ export class Consumer {
 
             await ch.consume(
                 appointmentQueue,
-                async (msg) => {
+                async (msg: ConsumeMessage | null) => {
                     if (!msg) return;
 
                     try {
@@ -68,7 +68,7 @@ export class Consumer {
             // ===== User Notification Queue Consumer =====
             await ch.consume(
                 userQueue,
-                async (msg) => {
+                async (msg: ConsumeMessage | null) => {
                     if (!msg) return;
 
                     try {
@@ -131,7 +131,7 @@ export class Consumer {
                 console.log('✅ RabbitMQ channel closed');
             }
 
-            if (this.conn) {
+            if (this.conn && 'close' in this.conn) {
                 await this.conn.close();
                 console.log('✅ RabbitMQ connection closed');
             }
